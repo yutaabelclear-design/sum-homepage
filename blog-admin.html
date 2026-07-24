@@ -87,6 +87,13 @@
         </article>
 
         <article class="detail-card">
+          <h3>投稿の削除</h3>
+          <p>GitHubトークンを入力した状態で「一覧を読み込む」を押すと、現在の投稿一覧が表示されます。削除ボタンでその場でGitHubから削除できます。</p>
+          <button type="button" id="loadPostsBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">投稿の一覧を読み込む</button>
+          <div id="postList" style="margin-top:16px;"></div>
+        </article>
+
+        <article class="detail-card">
           <h3>自動保存(パソコン限定・対応ブラウザのみ)</h3>
           <p>blog.htmlを選択して許可すると、投稿するたびに自動でファイルへ保存されます。ローカルサーバー経由(http://localhost など)で開いている場合のみ使えます。file://で直接開いている場合や非対応ブラウザ、スマホでは使えません。</p>
           <button type="button" id="connectBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">blog.htmlを選択して自動保存を有効化</button>
@@ -222,6 +229,86 @@
         }),
       });
     }
+
+    const loadPostsBtn = document.getElementById('loadPostsBtn');
+    const postListEl = document.getElementById('postList');
+
+    function serializeDoc(doc) {
+      return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
+    }
+
+    async function loadBlogDoc() {
+      const current = await githubRequest(`blog.html?ref=${GITHUB_BRANCH}`);
+      const text = base64ToUtf8(current.content);
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      return { doc, sha: current.sha };
+    }
+
+    async function deleteBlogPost(index) {
+      const { doc, sha } = await loadBlogDoc();
+      const posts = doc.querySelectorAll('#blogList .blog-post');
+      if (!posts[index]) throw new Error('投稿が見つかりませんでした');
+      posts[index].remove();
+      await githubRequest('blog.html', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Delete blog post',
+          content: utf8ToBase64(serializeDoc(doc)),
+          sha,
+          branch: GITHUB_BRANCH,
+        }),
+      });
+    }
+
+    async function renderPostList() {
+      if (!githubTokenInput.value.trim()) {
+        postListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      postListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await loadBlogDoc();
+        const posts = Array.from(doc.querySelectorAll('#blogList .blog-post'));
+        postListEl.innerHTML = '';
+        if (!posts.length) {
+          postListEl.textContent = '投稿がありません。';
+          return;
+        }
+        posts.forEach((post, index) => {
+          const title = post.querySelector('h3')?.textContent || '(無題)';
+          const time = post.querySelector('time')?.textContent || '';
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.08);';
+          const label = document.createElement('span');
+          label.textContent = `${time} ${title}`;
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.textContent = '削除';
+          delBtn.style.cssText = 'flex:none;padding:8px 18px;border-radius:999px;border:1px solid #c0392b;color:#c0392b;background:#fff;cursor:pointer;';
+          delBtn.addEventListener('click', async () => {
+            if (!confirm(`「${title}」を削除しますか?`)) return;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteBlogPost(index);
+              renderPostList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          row.appendChild(label);
+          row.appendChild(delBtn);
+          postListEl.appendChild(row);
+        });
+      } catch (err) {
+        postListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadPostsBtn.addEventListener('click', renderPostList);
 
     let blogFileHandle = null;
     const supportsFileAccess = 'showOpenFilePicker' in window;

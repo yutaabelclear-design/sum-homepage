@@ -83,6 +83,13 @@
         </article>
 
         <article class="detail-card">
+          <h3>投稿の削除</h3>
+          <p>GitHubトークンを入力した状態で「一覧を読み込む」を押すと、現在のお知らせ一覧が表示されます。削除ボタンで news.html と index.html の両方から削除できます。</p>
+          <button type="button" id="loadPostsBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">お知らせの一覧を読み込む</button>
+          <div id="postList" style="margin-top:16px;"></div>
+        </article>
+
+        <article class="detail-card">
           <h3>生成されたHTML</h3>
           <p>GitHubトークンが未入力の場合は、下のコードを news.html と index.html の <code>&lt;div class="news-list"&gt;</code> の中(一番上)に貼り付けてください。</p>
           <textarea id="newsOutput" rows="6" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
@@ -180,6 +187,98 @@
         }),
       });
     }
+
+    const loadPostsBtn = document.getElementById('loadPostsBtn');
+    const postListEl = document.getElementById('postList');
+
+    function serializeDoc(doc) {
+      return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
+    }
+
+    async function loadFileDoc(path) {
+      const current = await githubRequest(`${path}?ref=${GITHUB_BRANCH}`);
+      const text = base64ToUtf8(current.content);
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      return { doc, sha: current.sha };
+    }
+
+    async function saveFileDoc(path, doc, sha, message) {
+      await githubRequest(path, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          content: utf8ToBase64(serializeDoc(doc)),
+          sha,
+          branch: GITHUB_BRANCH,
+        }),
+      });
+    }
+
+    async function deleteNewsPost(postId) {
+      const newsFile = await loadFileDoc('news.html');
+      const target = newsFile.doc.getElementById(postId);
+      if (!target) throw new Error('news.htmlに投稿が見つかりませんでした');
+      target.remove();
+      await saveFileDoc('news.html', newsFile.doc, newsFile.sha, 'Delete news post');
+
+      const indexFile = await loadFileDoc('index.html');
+      const link = indexFile.doc.querySelector(`a.news-card[href="news.html#${postId}"]`);
+      if (link) {
+        link.remove();
+        await saveFileDoc('index.html', indexFile.doc, indexFile.sha, 'Delete news post from homepage');
+      }
+    }
+
+    async function renderPostList() {
+      if (!githubTokenInput.value.trim()) {
+        postListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      postListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await loadFileDoc('news.html');
+        const posts = Array.from(doc.querySelectorAll('.news-full-list .news-card'));
+        postListEl.innerHTML = '';
+        if (!posts.length) {
+          postListEl.textContent = 'お知らせがありません。';
+          return;
+        }
+        posts.forEach((post) => {
+          const postId = post.id;
+          const title = post.querySelector('h3')?.textContent || '(無題)';
+          const time = post.querySelector('time')?.textContent || '';
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.08);';
+          const label = document.createElement('span');
+          label.textContent = `${time} ${title}`;
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.textContent = '削除';
+          delBtn.style.cssText = 'flex:none;padding:8px 18px;border-radius:999px;border:1px solid #c0392b;color:#c0392b;background:#fff;cursor:pointer;';
+          delBtn.addEventListener('click', async () => {
+            if (!confirm(`「${title}」を削除しますか?`)) return;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteNewsPost(postId);
+              renderPostList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          row.appendChild(label);
+          row.appendChild(delBtn);
+          postListEl.appendChild(row);
+        });
+      } catch (err) {
+        postListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadPostsBtn.addEventListener('click', renderPostList);
 
     function formatDate(value) {
       const [y, m, d] = value.split('-');
