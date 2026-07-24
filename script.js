@@ -86,6 +86,46 @@ function updateProgress() {
 window.addEventListener('scroll', updateProgress, { passive: true });
 updateProgress();
 
+const blogModal = document.getElementById('blogModal');
+if (blogModal) {
+  const blogModalImg = document.getElementById('blogModalImg');
+  const blogModalTime = document.getElementById('blogModalTime');
+  const blogModalTitle = document.getElementById('blogModalTitle');
+  const blogModalBody = document.getElementById('blogModalBody');
+  const blogModalClose = document.getElementById('blogModalClose');
+
+  function openBlogModal(post) {
+    const img = post.querySelector('img');
+    const time = post.querySelector('time');
+    const title = post.querySelector('h3');
+    const body = post.querySelector('.blog-post-body p');
+
+    blogModalImg.src = img ? img.src : '';
+    blogModalImg.alt = img ? img.alt : '';
+    blogModalTime.textContent = time ? time.textContent : '';
+    blogModalTitle.textContent = title ? title.textContent : '';
+    blogModalBody.textContent = body ? body.textContent : '';
+    blogModal.hidden = false;
+  }
+
+  function closeBlogModal() {
+    blogModal.hidden = true;
+    blogModalImg.src = '';
+  }
+
+  document.querySelectorAll('.blog-post').forEach((post) => {
+    post.addEventListener('click', () => openBlogModal(post));
+  });
+
+  blogModalClose.addEventListener('click', closeBlogModal);
+  blogModal.addEventListener('click', (event) => {
+    if (event.target === blogModal) closeBlogModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !blogModal.hidden) closeBlogModal();
+  });
+}
+
 document.querySelectorAll('.news-slider').forEach((slider) => {
   const list = slider.querySelector('.news-list');
   const prevBtn = slider.querySelector('.news-nav.prev');
