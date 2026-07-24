@@ -1076,7 +1076,20 @@ a {
   display: grid;
   gap: 30px;
   max-width: 860px;
+  max-height: 75vh;
   margin: 0 auto;
+  padding-right: 10px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.blog-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.blog-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
 }
 
 .blog-post {
