@@ -20,12 +20,32 @@ function startHeroTitle() {
   const text = 'The Sun Rises Again';
   heroTitle.textContent = '';
 
-  [...text].forEach((char, index) => {
-    const span = document.createElement('span');
-    span.textContent = char === ' ' ? '\u00A0' : char;
-    if (char === ' ') span.classList.add('space');
-    span.style.animationDelay = `${index * 0.055}s`;
-    heroTitle.appendChild(span);
+  const words = text.split(' ');
+  let charIndex = 0;
+
+  words.forEach((word, wordIndex) => {
+    const wordSpan = document.createElement('span');
+    wordSpan.style.display = 'inline-block';
+    wordSpan.style.whiteSpace = 'nowrap';
+
+    [...word].forEach((char) => {
+      const span = document.createElement('span');
+      span.textContent = char;
+      span.style.animationDelay = `${charIndex * 0.055}s`;
+      wordSpan.appendChild(span);
+      charIndex += 1;
+    });
+
+    heroTitle.appendChild(wordSpan);
+
+    if (wordIndex < words.length - 1) {
+      const spaceSpan = document.createElement('span');
+      spaceSpan.textContent = '\u00A0';
+      spaceSpan.classList.add('space');
+      spaceSpan.style.animationDelay = `${charIndex * 0.055}s`;
+      heroTitle.appendChild(spaceSpan);
+      charIndex += 1;
+    }
   });
 }
 
