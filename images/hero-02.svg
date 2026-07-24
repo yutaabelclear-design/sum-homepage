@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="GARAGE">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#171717"/>
+      <stop offset="1" stop-color="#dc5a00"/>
+    </linearGradient>
+    <pattern id="grid" width="70" height="70" patternUnits="userSpaceOnUse">
+      <path d="M70 0H0V70" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+    </pattern>
+  </defs>
+  <rect width="1400" height="900" fill="url(#g)"/>
+  <rect width="1400" height="900" fill="url(#grid)" opacity=".45"/>
+  <path d="M-120 760 C220 520 450 820 800 570 C1030 410 1150 390 1520 470 L1520 960 L-120 960 Z" fill="rgba(0,0,0,.38)"/>
+  <path d="M100 640 L450 640 L560 520 L910 520 L1040 640 L1250 640" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity=".88"/>
+  <circle cx="380" cy="654" r="72" fill="none" stroke="#ffffff" stroke-width="22" opacity=".9"/>
+  <circle cx="1030" cy="654" r="72" fill="none" stroke="#ffffff" stroke-width="22" opacity=".9"/>
+  <path d="M95 200 H520" stroke="#ff8a00" stroke-width="16" stroke-linecap="round"/>
+  <path d="M95 230 H420" stroke="#ff8a00" stroke-width="7" stroke-linecap="round" opacity=".72"/>
+  <text x="95" y="330" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="88" letter-spacing="-4">GARAGE</text>
+  <text x="100" y="392" fill="#ffffff" opacity=".78" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="28" letter-spacing="4">DESIGN / BUILD / DRIVE</text>
+</svg>

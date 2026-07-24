@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1180" />
+  <title>NEWS管理 | 静岡大学 学生フォーミュラ SUM</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="SUMトップへ">
+      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <span>SUM</span>
+    </a>
+    <nav class="site-nav" aria-label="主要ナビゲーション">
+      <a href="news.html">News</a>
+      <a href="overview.html">Team</a>
+      <a href="members.html">Members</a>
+      <a href="activity.html">Activity</a>
+      <a href="vehicle.html">Vehicle</a>
+      <a href="sponsors.html">Sponsors</a>
+      <a href="recruit.html">Recruit</a>
+      <a href="results.html">Results</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <div id="authGate" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:var(--black);">
+    <form id="authForm" class="contact-form" style="width:340px;padding:34px;border-radius:24px;">
+      <h3 style="margin:0 0 18px;color:var(--ink);">管理者ログイン</h3>
+      <label>
+        パスワード
+        <input type="password" id="authPassword" autocomplete="off" required />
+      </label>
+      <button type="submit" class="btn primary">ログイン</button>
+      <p id="authError" style="margin-top:12px;font-size:14px;color:#c0392b;"></p>
+    </form>
+  </div>
+
+  <main class="detail-main" id="adminMain" style="display:none;">
+    <section class="detail-hero">
+      <img src="images/hero-02.svg" alt="" />
+      <div class="detail-hero-content">
+        <div class="breadcrumb"><a href="index.html">TOP</a> / NEWS管理</div>
+        <p class="section-label">ADMIN</p>
+        <h1>NEWS管理</h1>
+        <p>ここで入力した内容をもとにHTMLスニペットを生成します。生成されたコードを news.html と index.html の news-list 内にコピー&ペーストしてください。</p>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-wrap detail-grid">
+        <article class="detail-card">
+          <h3>お知らせを入力</h3>
+          <form id="newsForm" class="contact-form">
+            <label>
+              日付
+              <input type="date" id="newsDate" required />
+            </label>
+            <label>
+              タイトル
+              <input type="text" id="newsTitle" placeholder="例: 2026年 大会エントリー完了" required />
+            </label>
+            <label>
+              本文
+              <textarea id="newsBody" rows="4" placeholder="お知らせの本文を入力してください"></textarea>
+            </label>
+            <button type="submit" class="btn primary">スニペットを生成</button>
+          </form>
+        </article>
+
+        <article class="detail-card">
+          <h3>生成されたHTML</h3>
+          <p>下のコードを news.html と index.html の <code>&lt;div class="news-list"&gt;</code> の中(一番上)に貼り付けてください。</p>
+          <textarea id="newsOutput" rows="6" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
+          <button type="button" id="copyBtn" class="btn ghost" style="margin-top:14px;color:var(--ink);border-color:rgba(0,0,0,0.18);">コードをコピー</button>
+          <p id="copyNote" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Shizuoka University Formula Project SUM</p>
+    <a href="index.html">Back to top</a>
+  </footer>
+
+  <script>
+    const ADMIN_PASSWORD = 'sum-admin-2026';
+    const authGate = document.getElementById('authGate');
+    const authForm = document.getElementById('authForm');
+    const authError = document.getElementById('authError');
+    const adminMain = document.getElementById('adminMain');
+
+    authForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = document.getElementById('authPassword').value;
+      if (value === ADMIN_PASSWORD) {
+        authGate.style.display = 'none';
+        adminMain.style.display = '';
+      } else {
+        authError.textContent = 'パスワードが違います。';
+      }
+    });
+
+    const form = document.getElementById('newsForm');
+    const output = document.getElementById('newsOutput');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyNote = document.getElementById('copyNote');
+
+    function formatDate(value) {
+      const [y, m, d] = value.split('-');
+      return { iso: value, label: `${y}.${m}.${d}` };
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const dateValue = document.getElementById('newsDate').value;
+      const title = document.getElementById('newsTitle').value.trim();
+      const body = document.getElementById('newsBody').value.trim();
+      if (!dateValue || !title) return;
+
+      const { iso, label } = formatDate(dateValue);
+      const bodyHtml = body ? `<p>${escapeHtml(body)}</p>` : '';
+      output.value = `<article class="news-card"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</article>`;
+      copyNote.textContent = '';
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!output.value) return;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        copyNote.textContent = 'コピーしました。news.html / index.html に貼り付けてください。';
+      } catch (err) {
+        output.select();
+        copyNote.textContent = '自動コピーに失敗しました。手動で選択してコピーしてください。';
+      }
+    });
+  </script>
+</body>
+</html>

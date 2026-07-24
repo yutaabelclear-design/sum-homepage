@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1180" />
+  <title>Blog管理 | 静岡大学 学生フォーミュラ SUM</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="SUMトップへ">
+      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <span>SUM</span>
+    </a>
+    <nav class="site-nav" aria-label="主要ナビゲーション">
+      <a href="news.html">News</a>
+      <a href="overview.html">Team</a>
+      <a href="members.html">Members</a>
+      <a href="activity.html">Activity</a>
+      <a href="vehicle.html">Vehicle</a>
+      <a href="sponsors.html">Sponsors</a>
+      <a href="recruit.html">Recruit</a>
+      <a href="results.html">Results</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <div id="authGate" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:var(--black);">
+    <form id="authForm" class="contact-form" style="width:340px;padding:34px;border-radius:24px;">
+      <h3 style="margin:0 0 18px;color:var(--ink);">管理者ログイン</h3>
+      <label>
+        パスワード
+        <input type="password" id="authPassword" autocomplete="off" required />
+      </label>
+      <button type="submit" class="btn primary">ログイン</button>
+      <p id="authError" style="margin-top:12px;font-size:14px;color:#c0392b;"></p>
+    </form>
+  </div>
+
+  <main class="detail-main" id="adminMain" style="display:none;">
+    <section class="detail-hero">
+      <img src="images/gallery-01.svg" alt="" />
+      <div class="detail-hero-content">
+        <div class="breadcrumb"><a href="index.html">TOP</a> / Blog管理</div>
+        <p class="section-label">ADMIN</p>
+        <h1>Blog管理</h1>
+        <p>ここで入力した内容と写真をもとにHTMLスニペットを生成します。生成されたコードを blog.html の blog-list の中(一番上)にコピー&ペーストしてください。</p>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-wrap detail-grid">
+        <article class="detail-card">
+          <h3>記事を入力</h3>
+          <form id="blogForm" class="contact-form">
+            <label>
+              日付
+              <input type="date" id="blogDate" required />
+            </label>
+            <label>
+              タイトル
+              <input type="text" id="blogTitle" placeholder="例: 走行試験を行いました" required />
+            </label>
+            <label>
+              本文
+              <textarea id="blogBody" rows="6" placeholder="記事の本文を入力してください"></textarea>
+            </label>
+            <label>
+              写真(任意)
+              <input type="file" id="blogPhoto" accept="image/*" />
+            </label>
+            <button type="submit" class="btn primary">スニペットを生成</button>
+          </form>
+        </article>
+
+        <article class="detail-card">
+          <h3>自動保存(対応ブラウザのみ)</h3>
+          <p>blog.htmlを選択して許可すると、投稿するたびに自動でファイルへ保存されます。ローカルサーバー経由(http://localhost など)で開いている場合のみ使えます。file://で直接開いている場合や非対応ブラウザでは使えないので、下のコピー機能を使ってください。</p>
+          <button type="button" id="connectBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">blog.htmlを選択して自動保存を有効化</button>
+          <p id="connectStatus" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+        </article>
+
+        <article class="detail-card">
+          <h3>生成されたHTML</h3>
+          <p>自動保存が有効な場合は投稿と同時にblog.htmlへ反映されます。無効な場合は、下のコードを blog.html の <code>&lt;div class="blog-list"&gt;</code> の中(一番上)に貼り付けてください。写真は自動でコード内に埋め込まれるので、画像ファイルを別途コピーする必要はありません。</p>
+          <textarea id="blogOutput" rows="8" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
+          <button type="button" id="copyBtn" class="btn ghost" style="margin-top:14px;color:var(--ink);border-color:rgba(0,0,0,0.18);">コードをコピー</button>
+          <p id="copyNote" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+          <p style="margin-top:18px;font-size:13px;color:var(--muted);">※ 写真をコードに直接埋め込む方式のため、大きな画像を使うとコードがとても長くなります。数百KB程度の写真推奨です。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Shizuoka University Formula Project SUM</p>
+    <a href="index.html">Back to top</a>
+  </footer>
+
+  <script>
+    const ADMIN_PASSWORD = 'sum-admin-2026';
+    const authGate = document.getElementById('authGate');
+    const authForm = document.getElementById('authForm');
+    const authError = document.getElementById('authError');
+    const adminMain = document.getElementById('adminMain');
+
+    authForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const value = document.getElementById('authPassword').value;
+      if (value === ADMIN_PASSWORD) {
+        authGate.style.display = 'none';
+        adminMain.style.display = '';
+      } else {
+        authError.textContent = 'パスワードが違います。';
+      }
+    });
+
+    const form = document.getElementById('blogForm');
+    const output = document.getElementById('blogOutput');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyNote = document.getElementById('copyNote');
+    const photoInput = document.getElementById('blogPhoto');
+    const connectBtn = document.getElementById('connectBtn');
+    const connectStatus = document.getElementById('connectStatus');
+
+    let blogFileHandle = null;
+    const supportsFileAccess = 'showOpenFilePicker' in window;
+
+    if (!supportsFileAccess) {
+      connectBtn.disabled = true;
+      connectStatus.textContent = 'このブラウザ、またはfile://での閲覧では自動保存機能は使えません。下のコピー機能をご利用ください。';
+    }
+
+    connectBtn.addEventListener('click', async () => {
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }],
+        });
+        const permission = await handle.requestPermission({ mode: 'readwrite' });
+        if (permission !== 'granted') {
+          connectStatus.textContent = '書き込み許可が得られませんでした。';
+          return;
+        }
+        blogFileHandle = handle;
+        connectStatus.textContent = `「${handle.name}」に接続しました。投稿すると自動保存されます。`;
+      } catch (err) {
+        connectStatus.textContent = 'ファイル選択がキャンセルされました。';
+      }
+    });
+
+    async function saveToBlogFile(snippet) {
+      const file = await blogFileHandle.getFile();
+      const text = await file.text();
+      const marker = 'id="blogList">';
+      const index = text.indexOf(marker);
+      if (index === -1) {
+        throw new Error('marker-not-found');
+      }
+      const insertAt = index + marker.length;
+      const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
+      const writable = await blogFileHandle.createWritable();
+      await writable.write(newText);
+      await writable.close();
+    }
+
+    function formatDate(value) {
+      const [y, m, d] = value.split('-');
+      return { iso: value, label: `${y}.${m}.${d}` };
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function readPhotoAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) { resolve(''); return; }
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const dateValue = document.getElementById('blogDate').value;
+      const title = document.getElementById('blogTitle').value.trim();
+      const body = document.getElementById('blogBody').value.trim();
+      if (!dateValue || !title) return;
+
+      const { iso, label } = formatDate(dateValue);
+      const file = photoInput.files[0];
+      const dataUrl = await readPhotoAsDataUrl(file);
+      const imgHtml = dataUrl ? `<img src="${dataUrl}" alt="${escapeHtml(title)}" />` : '';
+      const bodyHtml = body ? `<p>${escapeHtml(body)}</p>` : '';
+
+      const snippet = `<article class="blog-post">${imgHtml}<div class="blog-post-body"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</div></article>`;
+      output.value = snippet;
+
+      if (blogFileHandle) {
+        try {
+          await saveToBlogFile(snippet);
+          copyNote.textContent = 'blog.html に自動保存しました。';
+        } catch (err) {
+          copyNote.textContent = '自動保存に失敗しました。下のコードを手動でコピー&ペーストしてください。';
+        }
+      } else {
+        copyNote.textContent = '';
+      }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!output.value) return;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        copyNote.textContent = 'コピーしました。blog.html に貼り付けてください。';
+      } catch (err) {
+        output.select();
+        copyNote.textContent = '自動コピーに失敗しました。手動で選択してコピーしてください。';
+      }
+    });
+  </script>
+</body>
+</html>
