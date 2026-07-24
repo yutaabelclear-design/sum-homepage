@@ -2,20 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1180" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>チーム概要 | 静岡大学 学生フォーミュラ SUM</title>
   <meta name="description" content="静岡大学 学生フォーミュラ SUMのチーム概要ページです。" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"></div>
 
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="SUMトップへ">
-      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <img src="assets/images/logo-placeholder.svg" alt="SUM logo" />
       <span>SUM</span>
     </a>
-    <nav class="site-nav" aria-label="主要ナビゲーション">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
       <a href="news.html">News</a>
       <a href="overview.html">Team</a>
       <a href="members.html">Members</a>
@@ -32,7 +35,7 @@
 
   <main class="detail-main">
     <section class="detail-hero">
-      <img src="images/team-photo.svg" alt="" />
+      <img src="assets/images/team-photo.svg" alt="" />
       <div class="detail-hero-content reveal">
         <div class="breadcrumb"><a href="index.html">TOP</a> / TEAM</div>
         <p class="section-label">TEAM</p>
@@ -44,7 +47,7 @@
     <section class="detail-section">
       <div class="detail-wrap detail-grid">
         <aside class="detail-side reveal">
-          <img src="images/logo-placeholder.svg" alt="SUM 仮ロゴ" />
+          <img src="assets/images/logo-placeholder.svg" alt="SUM 仮ロゴ" />
           <h2>SUM</h2>
           <p>静岡大学の学生フォーミュラチーム。学生が主体となり、車両開発と大会挑戦に取り組みます。</p>
         </aside>
@@ -81,6 +84,6 @@
     <a href="index.html">Back to top</a>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>

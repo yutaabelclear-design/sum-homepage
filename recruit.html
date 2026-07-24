@@ -2,20 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1180" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>新入部員募集 | 静岡大学 学生フォーミュラ SUM</title>
   <meta name="description" content="静岡大学 学生フォーミュラ SUMの新入部員募集ページです。" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"></div>
 
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="SUMトップへ">
-      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <img src="assets/images/logo-placeholder.svg" alt="SUM logo" />
       <span>SUM</span>
     </a>
-    <nav class="site-nav" aria-label="主要ナビゲーション">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
       <a href="news.html">News</a>
       <a href="overview.html">Team</a>
       <a href="members.html">Members</a>
@@ -32,7 +35,7 @@
 
   <main class="detail-main">
     <section class="detail-hero">
-      <img src="images/recruit-photo.svg" alt="" />
+      <img src="assets/images/recruit-photo.svg" alt="" />
       <div class="detail-hero-content reveal">
         <div class="breadcrumb"><a href="index.html">TOP</a> / RECRUIT</div>
         <p class="section-label">RECRUIT</p>
@@ -43,7 +46,7 @@
 
     <section class="detail-section">
       <div class="detail-wrap detail-grid">
-        <aside class="detail-side reveal"><img src="images/recruit-photo.svg" alt="仮の活動写真" /><h2>Join SUM</h2><p>車が詳しくなくても、設計・製作・広報など興味に合わせて参加できます。</p></aside>
+        <aside class="detail-side reveal"><img src="assets/images/recruit-photo.svg" alt="仮の活動写真" /><h2>Join SUM</h2><p>車が詳しくなくても、設計・製作・広報など興味に合わせて参加できます。</p></aside>
         <div class="detail-body">
           <article class="detail-card reveal"><h2>学生フォーミュラの魅力</h2><p>学生フォーミュラの魅力は、大学生活の中で本格的なものづくりに挑戦できることです。自分たちで考えたものが、実際に車両として形になり、走るところまで経験できます。</p></article>
           <article class="detail-card reveal"><h3>こんな人におすすめ</h3><ul class="detail-list"><li>車やモータースポーツに興味がある人</li><li>設計、加工、電装、プログラミングをやってみたい人</li><li>広報やスポンサー対応に興味がある人</li><li>大学で本気で打ち込める活動を探している人</li></ul></article>
@@ -58,6 +61,6 @@
     <a href="index.html">Back to top</a>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>

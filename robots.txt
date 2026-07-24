@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /news-admin.html
+Disallow: /blog-admin.html
+
+Sitemap: https://yutaabelclear-design.github.io/sum-homepage/sitemap.xml

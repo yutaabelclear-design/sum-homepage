@@ -20,11 +20,15 @@ html {
 
 body {
   margin: 0;
-  min-width: 1180px;
+  overflow-x: hidden;
   font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
   background: var(--soft);
   color: var(--ink);
   line-height: 1.75;
+}
+
+body.nav-open {
+  overflow: hidden;
 }
 
 img {
@@ -132,6 +136,43 @@ a {
 
 .site-nav a:hover::after {
   width: 100%;
+}
+
+.nav-toggle {
+  display: none;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--white);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.nav-toggle.is-active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle.is-active span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle.is-active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 .hero {
@@ -1071,6 +1112,105 @@ a {
   letter-spacing: 0.08em;
 }
 
+/* ===== Admin pages ===== */
+.is-hidden {
+  display: none !important;
+}
+
+.admin-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+  padding: 24px;
+}
+
+.admin-gate-form {
+  width: 340px;
+  max-width: 100%;
+  padding: 34px;
+  border-radius: 24px;
+}
+
+.admin-gate-title {
+  margin: 0 0 18px;
+  color: var(--ink);
+}
+
+.admin-error {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #c0392b;
+}
+
+.admin-field {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.admin-input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 16px;
+  font: inherit;
+  background: #fbfbfb;
+  box-sizing: border-box;
+}
+
+.admin-note {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.admin-status {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.admin-btn-ghost {
+  margin-top: 14px;
+  color: var(--ink);
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+.admin-post-list {
+  margin-top: 16px;
+}
+
+.admin-post-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.admin-delete-btn {
+  flex: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+  background: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .admin-gate-form {
+    padding: 26px;
+  }
+}
+
 /* ===== Blog ===== */
 .blog-list {
   display: grid;
@@ -1205,4 +1345,257 @@ a {
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
+}
+
+/* ===== Responsive overrides ===== */
+/* Placed after every rule above so equal-specificity selectors here win at these widths. */
+@media (max-width: 900px) {
+  .site-header {
+    left: 16px;
+    right: 16px;
+    top: 12px;
+    padding: 10px 14px;
+  }
+
+  .nav-toggle {
+    display: flex;
+  }
+
+  .site-nav {
+    position: fixed;
+    inset: 0;
+    z-index: 998;
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 22px;
+    padding: 110px 42px 60px;
+    background: rgba(8, 8, 8, 0.97);
+    overflow-y: auto;
+  }
+
+  .site-nav.is-open {
+    display: flex;
+  }
+
+  .site-nav a {
+    font-size: 20px;
+  }
+
+  .hero-content {
+    width: calc(100% - 40px);
+    padding-top: 40px;
+  }
+
+  .hero-title {
+    font-size: clamp(46px, 13vw, 96px);
+  }
+
+  .hero-text {
+    font-size: 16px;
+  }
+
+  .hero-actions {
+    flex-wrap: wrap;
+  }
+
+  .scroll-cue {
+    right: 24px;
+    bottom: 24px;
+  }
+
+  .section {
+    padding: 72px 24px;
+  }
+
+  .section h2,
+  .story-panel h2 {
+    font-size: 34px;
+  }
+
+  .news-nav {
+    display: none;
+  }
+
+  .news-card {
+    flex-basis: 260px;
+  }
+
+  .page-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .story {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .story-visual {
+    position: relative;
+    height: 46vh;
+  }
+
+  .story-content {
+    padding: 56px 24px;
+  }
+
+  .story-panel {
+    min-height: auto;
+    padding: 36px 0;
+  }
+
+  .member-cards,
+  .sponsor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+  }
+
+  .result-card {
+    grid-template-columns: 1fr;
+    padding: 24px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-box p {
+    grid-template-columns: 70px 1fr;
+  }
+
+  .map-box iframe {
+    height: 260px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    gap: 12px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+
+  .detail-hero {
+    padding: 120px 24px 56px;
+    min-height: 58vh;
+  }
+
+  .detail-hero h1 {
+    font-size: clamp(42px, 12vw, 72px);
+  }
+
+  .detail-section {
+    padding: 64px 20px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-side {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-side img {
+    width: 100%;
+  }
+
+  .detail-card {
+    padding: 26px;
+  }
+
+  .detail-card h2 {
+    font-size: 32px;
+  }
+
+  .detail-card--media,
+  .detail-subrow {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-card--media img,
+  .detail-subrow img {
+    min-height: 200px;
+  }
+
+  .detail-subrow + .detail-subrow {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .detail-stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .detail-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 26px;
+  }
+
+  .detail-banner {
+    width: 100%;
+  }
+
+  .detail-photo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .blog-modal {
+    padding: 20px;
+  }
+
+  .blog-modal-box {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-title {
+    font-size: clamp(38px, 14vw, 64px);
+  }
+
+  .hero-kicker,
+  .section-label {
+    font-size: 11px;
+  }
+
+  .btn {
+    min-width: 0;
+    padding: 0 18px;
+  }
+
+  .section h2,
+  .story-panel h2,
+  .detail-card h2 {
+    font-size: 26px;
+  }
+
+  .detail-hero h1 {
+    font-size: clamp(34px, 13vw, 52px);
+  }
+
+  .news-card {
+    flex-basis: 240px;
+    padding: 20px;
+  }
+
+  .sponsor-card img {
+    height: 40px;
+  }
+
+  .stat-row,
+  .detail-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-box p {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }

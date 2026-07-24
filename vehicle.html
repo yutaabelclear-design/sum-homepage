@@ -2,20 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1180" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>車両紹介 | 静岡大学 学生フォーミュラ SUM</title>
   <meta name="description" content="静岡大学 学生フォーミュラ SUMの車両紹介ページです。" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"></div>
 
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="SUMトップへ">
-      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <img src="assets/images/logo-placeholder.svg" alt="SUM logo" />
       <span>SUM</span>
     </a>
-    <nav class="site-nav" aria-label="主要ナビゲーション">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
       <a href="news.html">News</a>
       <a href="overview.html">Team</a>
       <a href="members.html">Members</a>
@@ -32,7 +35,7 @@
 
   <main class="detail-main">
     <section class="detail-hero">
-      <img src="images/vehicle-wide.svg" alt="" />
+      <img src="assets/images/vehicle-wide.svg" alt="" />
       <div class="detail-hero-content reveal">
         <div class="breadcrumb"><a href="index.html">TOP</a> / VEHICLE</div>
         <p class="section-label">VEHICLE</p>
@@ -43,9 +46,9 @@
 
     <section class="detail-section">
       <div class="detail-wrap detail-grid">
-        <aside class="detail-side reveal"><img src="images/vehicle-photo.svg" alt="仮の車両画像" /><h2>Machine</h2><p>車両写真やスペックは、実データが揃った段階で差し替えます。</p></aside>
+        <aside class="detail-side reveal"><img src="assets/images/vehicle-photo.svg" alt="仮の車両画像" /><h2>Machine</h2><p>車両写真やスペックは、実データが揃った段階で差し替えます。</p></aside>
         <div class="detail-body">
-          <article class="detail-card reveal"><h2>開発中マシン</h2><p>このページには、完成車両や製作中のフォーミュラカーの写真、設計コンセプト、車両スペックを掲載できます。</p><img class="wide-photo" src="images/vehicle-wide.svg" alt="仮のフォーミュラカー画像" /></article>
+          <article class="detail-card reveal"><h2>開発中マシン</h2><p>このページには、完成車両や製作中のフォーミュラカーの写真、設計コンセプト、車両スペックを掲載できます。</p><img class="wide-photo" src="assets/images/vehicle-wide.svg" alt="仮のフォーミュラカー画像" /></article>
           <article class="detail-card reveal"><h3>掲載すると良い項目</h3><ul class="detail-list"><li>車両名・年度</li><li>パワートレイン</li><li>フレーム・サスペンション</li><li>設計上のこだわり</li><li>大会での改善ポイント</li></ul></article>
         </div>
       </div>
@@ -57,6 +60,6 @@
     <a href="index.html">Back to top</a>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>

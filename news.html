@@ -2,20 +2,23 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1180" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>お知らせ | 静岡大学 学生フォーミュラ SUM</title>
   <meta name="description" content="静岡大学 学生フォーミュラ SUMのお知らせページです。" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"></div>
 
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="SUMトップへ">
-      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <img src="assets/images/logo-placeholder.svg" alt="SUM logo" />
       <span>SUM</span>
     </a>
-    <nav class="site-nav" aria-label="主要ナビゲーション">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
       <a href="news.html">News</a>
       <a href="overview.html">Team</a>
       <a href="members.html">Members</a>
@@ -32,7 +35,7 @@
 
   <main class="detail-main">
     <section class="detail-hero">
-      <img src="images/hero-02.svg" alt="" />
+      <img src="assets/images/hero-02.svg" alt="" />
       <div class="detail-hero-content reveal">
         <div class="breadcrumb"><a href="index.html">TOP</a> / NEWS</div>
         <p class="section-label">NEWS</p>
@@ -44,7 +47,6 @@
     <section class="detail-section">
       <div class="detail-wrap">
         <div class="news-full-list reveal">
-          <article class="news-card" id="news-2026-07-31"><time datetime="2026-07-31">2026.07.31</time><h3>rhb</h3><p>qwe</p></article>
           <article class="news-card" id="news-2026-06-30"><time datetime="2026-06-30">2026.06.30</time><h3>SUM公式サイトのプロトタイプを公開</h3><p>チーム概要・活動内容・スポンサー情報をまとめたホームページを制作中です。</p></article>
           <article class="news-card" id="news-2026-04-01"><time datetime="2026-04-01">2026.04.01</time><h3>新入部員募集ページを準備中</h3><p>設計・製作・広報など、さまざまな役割で参加できる内容を掲載予定です。</p></article>
           <article class="news-card" id="news-2025-09-30"><time datetime="2025-09-30">2025.09.30</time><h3>2025年 EV部門 6位</h3><p>大会での経験を次年度の車両開発につなげます。</p></article>
@@ -70,6 +72,6 @@
     <a href="index.html">Back to top</a>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>

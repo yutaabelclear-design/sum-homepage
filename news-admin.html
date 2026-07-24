@@ -2,18 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=1180" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NEWS管理 | 静岡大学 学生フォーミュラ SUM</title>
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="SUMトップへ">
-      <img src="images/logo-placeholder.svg" alt="SUM logo" />
+      <img src="assets/images/logo-placeholder.svg" alt="SUM logo" />
       <span>SUM</span>
     </a>
-    <nav class="site-nav" aria-label="主要ナビゲーション">
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
       <a href="news.html">News</a>
       <a href="overview.html">Team</a>
       <a href="members.html">Members</a>
@@ -28,21 +31,21 @@
     </nav>
   </header>
 
-  <div id="authGate" style="position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:var(--black);">
-    <form id="authForm" class="contact-form" style="width:340px;padding:34px;border-radius:24px;">
-      <h3 style="margin:0 0 18px;color:var(--ink);">管理者ログイン</h3>
+  <div id="authGate" class="admin-gate">
+    <form id="authForm" class="contact-form admin-gate-form">
+      <h3 class="admin-gate-title">管理者ログイン</h3>
       <label>
         パスワード
         <input type="password" id="authPassword" autocomplete="off" required />
       </label>
       <button type="submit" class="btn primary">ログイン</button>
-      <p id="authError" style="margin-top:12px;font-size:14px;color:#c0392b;"></p>
+      <p id="authError" class="admin-error"></p>
     </form>
   </div>
 
-  <main class="detail-main" id="adminMain" style="display:none;">
+  <main class="detail-main is-hidden" id="adminMain">
     <section class="detail-hero">
-      <img src="images/hero-02.svg" alt="" />
+      <img src="assets/images/hero-02.svg" alt="" />
       <div class="detail-hero-content">
         <div class="breadcrumb"><a href="index.html">TOP</a> / NEWS管理</div>
         <p class="section-label">ADMIN</p>
@@ -75,27 +78,27 @@
         <article class="detail-card">
           <h3>GitHubに直接投稿(スマホ対応)</h3>
           <p>GitHubの個人アクセストークンを入力すると、投稿時に自動で <code>news.html</code> と <code>index.html</code> の両方へ反映されます(数分後にサイトへ公開)。パソコン・スマホどちらのブラウザからでも使えます。</p>
-          <label style="display:block;">
+          <label class="admin-field">
             GitHubトークン
-            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." style="display:block;width:100%;margin-top:8px;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;" />
+            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." class="admin-input" />
           </label>
-          <p style="margin-top:10px;font-size:13px;color:var(--muted);">トークンはこの端末のブラウザ内にのみ一時保存され、ファイルには保存されません。他の人に共有しないでください。</p>
-          <p id="githubStatus" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+          <p class="admin-note">トークンはこの端末のブラウザ内にのみ一時保存され、ファイルには保存されません。他の人に共有しないでください。</p>
+          <p id="githubStatus" class="admin-status"></p>
         </article>
 
         <article class="detail-card">
           <h3>投稿の削除</h3>
           <p>GitHubトークンを入力した状態で「一覧を読み込む」を押すと、現在のお知らせ一覧が表示されます。削除ボタンで news.html と index.html の両方から削除できます。</p>
-          <button type="button" id="loadPostsBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">お知らせの一覧を読み込む</button>
-          <div id="postList" style="margin-top:16px;"></div>
+          <button type="button" id="loadPostsBtn" class="btn ghost admin-btn-ghost">お知らせの一覧を読み込む</button>
+          <div id="postList" class="admin-post-list"></div>
         </article>
 
         <article class="detail-card">
           <h3>生成されたHTML</h3>
           <p>GitHubトークンが未入力の場合は、下のコードを news.html と index.html の <code>&lt;div class="news-list"&gt;</code> の中(一番上)に貼り付けてください。</p>
-          <textarea id="newsOutput" rows="6" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
-          <button type="button" id="copyBtn" class="btn ghost" style="margin-top:14px;color:var(--ink);border-color:rgba(0,0,0,0.18);">コードをコピー</button>
-          <p id="copyNote" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+          <textarea id="newsOutput" rows="6" readonly placeholder="ここに生成結果が表示されます" class="admin-input"></textarea>
+          <button type="button" id="copyBtn" class="btn ghost admin-btn-ghost">コードをコピー</button>
+          <p id="copyNote" class="admin-status"></p>
         </article>
       </div>
     </section>
@@ -106,23 +109,11 @@
     <a href="index.html">Back to top</a>
   </footer>
 
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin-shared.js"></script>
   <script>
     const ADMIN_PASSWORD = 'sum-admin-2026';
-    const authGate = document.getElementById('authGate');
-    const authForm = document.getElementById('authForm');
-    const authError = document.getElementById('authError');
-    const adminMain = document.getElementById('adminMain');
-
-    authForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const value = document.getElementById('authPassword').value;
-      if (value === ADMIN_PASSWORD) {
-        authGate.style.display = 'none';
-        adminMain.style.display = '';
-      } else {
-        authError.textContent = 'パスワードが違います。';
-      }
-    });
+    AdminShared.setupAuthGate(ADMIN_PASSWORD);
 
     const form = document.getElementById('newsForm');
     const output = document.getElementById('newsOutput');
@@ -130,104 +121,23 @@
     const copyNote = document.getElementById('copyNote');
     const githubTokenInput = document.getElementById('githubToken');
     const githubStatus = document.getElementById('githubStatus');
-
-    const GITHUB_OWNER = 'yutaabelclear-design';
-    const GITHUB_REPO = 'sum-homepage';
-    const GITHUB_BRANCH = 'main';
-
-    const savedToken = sessionStorage.getItem('newsGithubToken');
-    if (savedToken) {
-      githubTokenInput.value = savedToken;
-      githubStatus.textContent = 'このセッションで保存されたトークンを使用します。';
-    }
-    githubTokenInput.addEventListener('input', () => {
-      sessionStorage.setItem('newsGithubToken', githubTokenInput.value);
-    });
-
-    function utf8ToBase64(str) {
-      return btoa(unescape(encodeURIComponent(str)));
-    }
-
-    function base64ToUtf8(b64) {
-      return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
-    }
-
-    async function githubRequest(path, options = {}) {
-      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
-        ...options,
-        headers: {
-          Authorization: `Bearer ${githubTokenInput.value.trim()}`,
-          Accept: 'application/vnd.github+json',
-          ...(options.headers || {}),
-        },
-      });
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`GitHub API error (${response.status}): ${errText}`);
-      }
-      return response.json();
-    }
-
-    async function insertSnippetIntoFile(path, marker, snippet) {
-      const current = await githubRequest(`${path}?ref=${GITHUB_BRANCH}`);
-      const text = base64ToUtf8(current.content);
-      const index = text.indexOf(marker);
-      if (index === -1) {
-        throw new Error(`marker-not-found-in-${path}`);
-      }
-      const insertAt = index + marker.length;
-      const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
-      await githubRequest(path, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: `Add news post to ${path}`,
-          content: utf8ToBase64(newText),
-          sha: current.sha,
-          branch: GITHUB_BRANCH,
-        }),
-      });
-    }
-
     const loadPostsBtn = document.getElementById('loadPostsBtn');
     const postListEl = document.getElementById('postList');
 
-    function serializeDoc(doc) {
-      return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
-    }
-
-    async function loadFileDoc(path) {
-      const current = await githubRequest(`${path}?ref=${GITHUB_BRANCH}`);
-      const text = base64ToUtf8(current.content);
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      return { doc, sha: current.sha };
-    }
-
-    async function saveFileDoc(path, doc, sha, message) {
-      await githubRequest(path, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          content: utf8ToBase64(serializeDoc(doc)),
-          sha,
-          branch: GITHUB_BRANCH,
-        }),
-      });
-    }
+    AdminShared.setupTokenPersistence(githubTokenInput, 'newsGithubToken', githubStatus);
 
     async function deleteNewsPost(postId) {
-      const newsFile = await loadFileDoc('news.html');
+      const newsFile = await AdminShared.loadFileDoc(githubTokenInput, 'news.html');
       const target = newsFile.doc.getElementById(postId);
       if (!target) throw new Error('news.htmlに投稿が見つかりませんでした');
       target.remove();
-      await saveFileDoc('news.html', newsFile.doc, newsFile.sha, 'Delete news post');
+      await AdminShared.saveFileDoc(githubTokenInput, 'news.html', newsFile.doc, newsFile.sha, 'Delete news post');
 
-      const indexFile = await loadFileDoc('index.html');
+      const indexFile = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
       const link = indexFile.doc.querySelector(`a.news-card[href="news.html#${postId}"]`);
       if (link) {
         link.remove();
-        await saveFileDoc('index.html', indexFile.doc, indexFile.sha, 'Delete news post from homepage');
+        await AdminShared.saveFileDoc(githubTokenInput, 'index.html', indexFile.doc, indexFile.sha, 'Delete news post from homepage');
       }
     }
 
@@ -238,7 +148,7 @@
       }
       postListEl.textContent = '読み込み中...';
       try {
-        const { doc } = await loadFileDoc('news.html');
+        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'news.html');
         const posts = Array.from(doc.querySelectorAll('.news-full-list .news-card'));
         postListEl.innerHTML = '';
         if (!posts.length) {
@@ -249,16 +159,9 @@
           const postId = post.id;
           const title = post.querySelector('h3')?.textContent || '(無題)';
           const time = post.querySelector('time')?.textContent || '';
-          const row = document.createElement('div');
-          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.08);';
-          const label = document.createElement('span');
-          label.textContent = `${time} ${title}`;
-          const delBtn = document.createElement('button');
-          delBtn.type = 'button';
-          delBtn.textContent = '削除';
-          delBtn.style.cssText = 'flex:none;padding:8px 18px;border-radius:999px;border:1px solid #c0392b;color:#c0392b;background:#fff;cursor:pointer;';
-          delBtn.addEventListener('click', async () => {
+          const row = AdminShared.renderPostRow(`${time} ${title}`, async (event) => {
             if (!confirm(`「${title}」を削除しますか?`)) return;
+            const delBtn = event.currentTarget;
             delBtn.disabled = true;
             delBtn.textContent = '削除中...';
             try {
@@ -270,8 +173,6 @@
               delBtn.textContent = '削除';
             }
           });
-          row.appendChild(label);
-          row.appendChild(delBtn);
           postListEl.appendChild(row);
         });
       } catch (err) {
@@ -281,18 +182,6 @@
 
     loadPostsBtn.addEventListener('click', renderPostList);
 
-    function formatDate(value) {
-      const [y, m, d] = value.split('-');
-      return { iso: value, label: `${y}.${m}.${d}` };
-    }
-
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const dateValue = document.getElementById('newsDate').value;
@@ -300,18 +189,18 @@
       const body = document.getElementById('newsBody').value.trim();
       if (!dateValue || !title) return;
 
-      const { iso, label } = formatDate(dateValue);
-      const bodyHtml = body ? `<p>${escapeHtml(body)}</p>` : '';
-      const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</article>`;
+      const { iso, label } = AdminShared.formatDate(dateValue);
+      const bodyHtml = body ? `<p>${AdminShared.escapeHtml(body)}</p>` : '';
+      const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
       output.value = newsSnippet;
 
       const token = githubTokenInput.value.trim();
       if (token) {
         githubStatus.textContent = '投稿中...';
         try {
-          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</a>`;
-          await insertSnippetIntoFile('news.html', 'class="news-full-list reveal">', newsSnippet);
-          await insertSnippetIntoFile('index.html', 'class="news-list reveal">', indexSnippet);
+          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          await AdminShared.insertSnippetIntoFile(githubTokenInput, 'news.html', 'class="news-full-list reveal">', newsSnippet, 'Add news post');
+          await AdminShared.insertSnippetIntoFile(githubTokenInput, 'index.html', 'class="news-list reveal">', indexSnippet, 'Add news post to homepage');
           githubStatus.textContent = 'GitHubに投稿しました。数分後にサイトへ反映されます。';
           copyNote.textContent = '';
         } catch (err) {
@@ -323,16 +212,7 @@
       copyNote.textContent = '';
     });
 
-    copyBtn.addEventListener('click', async () => {
-      if (!output.value) return;
-      try {
-        await navigator.clipboard.writeText(output.value);
-        copyNote.textContent = 'コピーしました。news.html / index.html に貼り付けてください。';
-      } catch (err) {
-        output.select();
-        copyNote.textContent = '自動コピーに失敗しました。手動で選択してコピーしてください。';
-      }
-    });
+    AdminShared.setupCopyButton(copyBtn, output, copyNote, 'コピーしました。news.html / index.html に貼り付けてください。');
   </script>
 </body>
 </html>
