@@ -72,8 +72,19 @@
         </article>
 
         <article class="detail-card">
+          <h3>GitHubに直接投稿(スマホ対応)</h3>
+          <p>GitHubの個人アクセストークンを入力すると、投稿時に自動で <code>news.html</code> と <code>index.html</code> の両方へ反映されます(数分後にサイトへ公開)。パソコン・スマホどちらのブラウザからでも使えます。</p>
+          <label style="display:block;">
+            GitHubトークン
+            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." style="display:block;width:100%;margin-top:8px;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;" />
+          </label>
+          <p style="margin-top:10px;font-size:13px;color:var(--muted);">トークンはこの端末のブラウザ内にのみ一時保存され、ファイルには保存されません。他の人に共有しないでください。</p>
+          <p id="githubStatus" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
+        </article>
+
+        <article class="detail-card">
           <h3>生成されたHTML</h3>
-          <p>下のコードを news.html と index.html の <code>&lt;div class="news-list"&gt;</code> の中(一番上)に貼り付けてください。</p>
+          <p>GitHubトークンが未入力の場合は、下のコードを news.html と index.html の <code>&lt;div class="news-list"&gt;</code> の中(一番上)に貼り付けてください。</p>
           <textarea id="newsOutput" rows="6" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
           <button type="button" id="copyBtn" class="btn ghost" style="margin-top:14px;color:var(--ink);border-color:rgba(0,0,0,0.18);">コードをコピー</button>
           <p id="copyNote" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
@@ -109,6 +120,66 @@
     const output = document.getElementById('newsOutput');
     const copyBtn = document.getElementById('copyBtn');
     const copyNote = document.getElementById('copyNote');
+    const githubTokenInput = document.getElementById('githubToken');
+    const githubStatus = document.getElementById('githubStatus');
+
+    const GITHUB_OWNER = 'yutaabelclear-design';
+    const GITHUB_REPO = 'sum-homepage';
+    const GITHUB_BRANCH = 'main';
+
+    const savedToken = sessionStorage.getItem('newsGithubToken');
+    if (savedToken) {
+      githubTokenInput.value = savedToken;
+      githubStatus.textContent = 'このセッションで保存されたトークンを使用します。';
+    }
+    githubTokenInput.addEventListener('input', () => {
+      sessionStorage.setItem('newsGithubToken', githubTokenInput.value);
+    });
+
+    function utf8ToBase64(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    function base64ToUtf8(b64) {
+      return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+    }
+
+    async function githubRequest(path, options = {}) {
+      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${githubTokenInput.value.trim()}`,
+          Accept: 'application/vnd.github+json',
+          ...(options.headers || {}),
+        },
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`GitHub API error (${response.status}): ${errText}`);
+      }
+      return response.json();
+    }
+
+    async function insertSnippetIntoFile(path, marker, snippet) {
+      const current = await githubRequest(`${path}?ref=${GITHUB_BRANCH}`);
+      const text = base64ToUtf8(current.content);
+      const index = text.indexOf(marker);
+      if (index === -1) {
+        throw new Error(`marker-not-found-in-${path}`);
+      }
+      const insertAt = index + marker.length;
+      const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
+      await githubRequest(path, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Add news post to ${path}`,
+          content: utf8ToBase64(newText),
+          sha: current.sha,
+          branch: GITHUB_BRANCH,
+        }),
+      });
+    }
 
     function formatDate(value) {
       const [y, m, d] = value.split('-');
@@ -122,7 +193,7 @@
         .replace(/>/g, '&gt;');
     }
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const dateValue = document.getElementById('newsDate').value;
       const title = document.getElementById('newsTitle').value.trim();
@@ -131,7 +202,24 @@
 
       const { iso, label } = formatDate(dateValue);
       const bodyHtml = body ? `<p>${escapeHtml(body)}</p>` : '';
-      output.value = `<article class="news-card"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</article>`;
+      const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</article>`;
+      output.value = newsSnippet;
+
+      const token = githubTokenInput.value.trim();
+      if (token) {
+        githubStatus.textContent = '投稿中...';
+        try {
+          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          await insertSnippetIntoFile('news.html', 'class="news-full-list reveal">', newsSnippet);
+          await insertSnippetIntoFile('index.html', 'class="news-list reveal">', indexSnippet);
+          githubStatus.textContent = 'GitHubに投稿しました。数分後にサイトへ反映されます。';
+          copyNote.textContent = '';
+        } catch (err) {
+          githubStatus.textContent = `投稿に失敗しました: ${err.message}`;
+        }
+        return;
+      }
+
       copyNote.textContent = '';
     });
 
