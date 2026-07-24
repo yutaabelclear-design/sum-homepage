@@ -94,15 +94,8 @@
         </article>
 
         <article class="detail-card">
-          <h3>自動保存(パソコン限定・対応ブラウザのみ)</h3>
-          <p>blog.htmlを選択して許可すると、投稿するたびに自動でファイルへ保存されます。ローカルサーバー経由(http://localhost など)で開いている場合のみ使えます。file://で直接開いている場合や非対応ブラウザ、スマホでは使えません。</p>
-          <button type="button" id="connectBtn" class="btn ghost" style="color:var(--ink);border-color:rgba(0,0,0,0.18);">blog.htmlを選択して自動保存を有効化</button>
-          <p id="connectStatus" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
-        </article>
-
-        <article class="detail-card">
           <h3>生成されたHTML</h3>
-          <p>自動保存が有効な場合は投稿と同時にblog.htmlへ反映されます。無効な場合は、下のコードを blog.html の <code>&lt;div class="blog-list"&gt;</code> の中(一番上)に貼り付けてください。写真は自動でコード内に埋め込まれるので、画像ファイルを別途コピーする必要はありません。</p>
+          <p>GitHubトークンが未入力の場合は、下のコードを blog.html の <code>&lt;div class="blog-list"&gt;</code> の中(一番上)に貼り付けてください。写真は自動でコード内に埋め込まれるので、画像ファイルを別途コピーする必要はありません。</p>
           <textarea id="blogOutput" rows="8" readonly placeholder="ここに生成結果が表示されます" style="display:block;width:100%;padding:14px 16px;border:1px solid rgba(0,0,0,0.12);border-radius:16px;font:inherit;background:#fbfbfb;box-sizing:border-box;"></textarea>
           <button type="button" id="copyBtn" class="btn ghost" style="margin-top:14px;color:var(--ink);border-color:rgba(0,0,0,0.18);">コードをコピー</button>
           <p id="copyNote" style="margin-top:10px;font-size:14px;color:var(--muted);"></p>
@@ -140,8 +133,6 @@
     const copyBtn = document.getElementById('copyBtn');
     const copyNote = document.getElementById('copyNote');
     const photoInput = document.getElementById('blogPhoto');
-    const connectBtn = document.getElementById('connectBtn');
-    const connectStatus = document.getElementById('connectStatus');
     const githubTokenInput = document.getElementById('githubToken');
     const githubStatus = document.getElementById('githubStatus');
 
@@ -310,46 +301,6 @@
 
     loadPostsBtn.addEventListener('click', renderPostList);
 
-    let blogFileHandle = null;
-    const supportsFileAccess = 'showOpenFilePicker' in window;
-
-    if (!supportsFileAccess) {
-      connectBtn.disabled = true;
-      connectStatus.textContent = 'このブラウザ、またはfile://での閲覧では自動保存機能は使えません。下のコピー機能をご利用ください。';
-    }
-
-    connectBtn.addEventListener('click', async () => {
-      try {
-        const [handle] = await window.showOpenFilePicker({
-          types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }],
-        });
-        const permission = await handle.requestPermission({ mode: 'readwrite' });
-        if (permission !== 'granted') {
-          connectStatus.textContent = '書き込み許可が得られませんでした。';
-          return;
-        }
-        blogFileHandle = handle;
-        connectStatus.textContent = `「${handle.name}」に接続しました。投稿すると自動保存されます。`;
-      } catch (err) {
-        connectStatus.textContent = 'ファイル選択がキャンセルされました。';
-      }
-    });
-
-    async function saveToBlogFile(snippet) {
-      const file = await blogFileHandle.getFile();
-      const text = await file.text();
-      const marker = 'id="blogList">';
-      const index = text.indexOf(marker);
-      if (index === -1) {
-        throw new Error('marker-not-found');
-      }
-      const insertAt = index + marker.length;
-      const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
-      const writable = await blogFileHandle.createWritable();
-      await writable.write(newText);
-      await writable.close();
-    }
-
     function formatDate(value) {
       const [y, m, d] = value.split('-');
       return { iso: value, label: `${y}.${m}.${d}` };
@@ -407,17 +358,7 @@
       const imgHtml = dataUrl ? `<img src="${dataUrl}" alt="${escapeHtml(title)}" />` : '';
       const snippet = `<article class="blog-post">${imgHtml}<div class="blog-post-body"><time datetime="${iso}">${label}</time><h3>${escapeHtml(title)}</h3>${bodyHtml}</div></article>`;
       output.value = snippet;
-
-      if (blogFileHandle) {
-        try {
-          await saveToBlogFile(snippet);
-          copyNote.textContent = 'blog.html に自動保存しました。';
-        } catch (err) {
-          copyNote.textContent = '自動保存に失敗しました。下のコードを手動でコピー&ペーストしてください。';
-        }
-      } else {
-        copyNote.textContent = '';
-      }
+      copyNote.textContent = '';
     });
 
     copyBtn.addEventListener('click', async () => {
