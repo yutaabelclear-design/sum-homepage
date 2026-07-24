@@ -93,18 +93,28 @@ if (blogModal) {
   const blogModalTitle = document.getElementById('blogModalTitle');
   const blogModalBody = document.getElementById('blogModalBody');
   const blogModalClose = document.getElementById('blogModalClose');
+  const blogModalLink = document.getElementById('blogModalLink');
 
   function openBlogModal(post) {
     const img = post.querySelector('img');
     const time = post.querySelector('time');
     const title = post.querySelector('h3');
     const body = post.querySelector('.blog-post-body p');
+    const link = post.querySelector('.blog-post-body a.link-more');
 
     blogModalImg.src = img ? img.src : '';
     blogModalImg.alt = img ? img.alt : '';
     blogModalTime.textContent = time ? time.textContent : '';
     blogModalTitle.textContent = title ? title.textContent : '';
     blogModalBody.textContent = body ? body.textContent : '';
+    if (blogModalLink) {
+      if (link) {
+        blogModalLink.href = link.href;
+        blogModalLink.style.display = '';
+      } else {
+        blogModalLink.style.display = 'none';
+      }
+    }
     blogModal.hidden = false;
   }
 
