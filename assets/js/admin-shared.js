@@ -113,6 +113,22 @@ const AdminShared = (() => {
     return { doc, sha: current.sha };
   }
 
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function withConflictRetry(fn, attempts = 3) {
+    for (let i = 0; i < attempts; i += 1) {
+      try {
+        return await fn();
+      } catch (err) {
+        const isConflict = /\(409\)/.test(err.message);
+        if (!isConflict || i === attempts - 1) throw err;
+        await wait(400 + i * 400);
+      }
+    }
+  }
+
   async function saveFileDoc(tokenInputEl, path, doc, sha, message) {
     await githubRequest(tokenInputEl, path, {
       method: 'PUT',
@@ -126,24 +142,34 @@ const AdminShared = (() => {
     });
   }
 
+  async function saveFileDocWithRetry(tokenInputEl, path, mutateDoc, message) {
+    return withConflictRetry(async () => {
+      const { doc, sha } = await loadFileDoc(tokenInputEl, path);
+      mutateDoc(doc);
+      await saveFileDoc(tokenInputEl, path, doc, sha, message);
+    });
+  }
+
   async function insertSnippetIntoFile(tokenInputEl, path, marker, snippet, message) {
-    const current = await githubRequest(tokenInputEl, `${path}?ref=${GITHUB_BRANCH}`);
-    const text = base64ToUtf8(current.content);
-    const index = text.indexOf(marker);
-    if (index === -1) {
-      throw new Error(`marker-not-found-in-${path}`);
-    }
-    const insertAt = index + marker.length;
-    const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
-    await githubRequest(tokenInputEl, path, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: message || `Add content to ${path}`,
-        content: utf8ToBase64(newText),
-        sha: current.sha,
-        branch: GITHUB_BRANCH,
-      }),
+    await withConflictRetry(async () => {
+      const current = await githubRequest(tokenInputEl, `${path}?ref=${GITHUB_BRANCH}`);
+      const text = base64ToUtf8(current.content);
+      const index = text.indexOf(marker);
+      if (index === -1) {
+        throw new Error(`marker-not-found-in-${path}`);
+      }
+      const insertAt = index + marker.length;
+      const newText = `${text.slice(0, insertAt)}\n          ${snippet}${text.slice(insertAt)}`;
+      await githubRequest(tokenInputEl, path, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: message || `Add content to ${path}`,
+          content: utf8ToBase64(newText),
+          sha: current.sha,
+          branch: GITHUB_BRANCH,
+        }),
+      });
     });
   }
 
@@ -267,6 +293,8 @@ const AdminShared = (() => {
     githubRequest,
     loadFileDoc,
     saveFileDoc,
+    saveFileDocWithRetry,
+    withConflictRetry,
     insertSnippetIntoFile,
     setupCopyButton,
     renderPostRow,
