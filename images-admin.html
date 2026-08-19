@@ -33,15 +33,11 @@
   </header>
 
   <div id="authGate" class="admin-gate">
-    <form id="authForm" class="contact-form admin-gate-form">
-      <h3 class="admin-gate-title">管理者ログイン</h3>
-      <label>
-        パスワード
-        <input type="password" id="authPassword" autocomplete="off" required />
-      </label>
-      <button type="submit" class="btn primary">ログイン</button>
-      <p id="authError" class="admin-error"></p>
-    </form>
+    <div class="admin-gate-form" style="text-align:center;">
+      <h3 class="admin-gate-title">ログインが必要です</h3>
+      <p class="admin-note">先に Manage ページでログインしてください。</p>
+      <a href="admin.html" class="btn primary">Manageへ</a>
+    </div>
   </div>
 
   <main class="detail-main is-hidden" id="adminMain">
@@ -97,8 +93,7 @@
   <script src="assets/js/main.js"></script>
   <script src="assets/js/admin-shared.js"></script>
   <script>
-    const ADMIN_PASSWORD = 'sum-admin-2026';
-    AdminShared.setupAuthGate(ADMIN_PASSWORD);
+    AdminShared.requireAuthOrRedirect();
 
     const githubTokenInput = document.getElementById('githubToken');
     AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', null);

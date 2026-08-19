@@ -28,6 +28,7 @@ const AdminShared = (() => {
   }
 
   const PASSWORD_STORAGE_KEY = 'sumAdminPassword';
+  const AUTH_FLAG_KEY = 'sumAdminAuthenticated';
 
   function getStoredPassword(fallbackPassword) {
     return localStorage.getItem(PASSWORD_STORAGE_KEY) || fallbackPassword;
@@ -37,22 +38,45 @@ const AdminShared = (() => {
     localStorage.setItem(PASSWORD_STORAGE_KEY, newPassword);
   }
 
+  function isAuthenticated() {
+    return localStorage.getItem(AUTH_FLAG_KEY) === 'true';
+  }
+
   function setupAuthGate(fallbackPassword) {
     const authGate = document.getElementById('authGate');
     const authForm = document.getElementById('authForm');
     const authError = document.getElementById('authError');
     const adminMain = document.getElementById('adminMain');
 
+    if (isAuthenticated()) {
+      authGate.classList.add('is-hidden');
+      adminMain.classList.remove('is-hidden');
+      return;
+    }
+
     authForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const value = document.getElementById('authPassword').value;
       if (value === getStoredPassword(fallbackPassword)) {
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
         authGate.classList.add('is-hidden');
         adminMain.classList.remove('is-hidden');
       } else {
         authError.textContent = 'パスワードが違います。';
       }
     });
+  }
+
+  function requireAuthOrRedirect() {
+    const adminMain = document.getElementById('adminMain');
+    const authGate = document.getElementById('authGate');
+    if (isAuthenticated()) {
+      if (authGate) authGate.classList.add('is-hidden');
+      adminMain.classList.remove('is-hidden');
+      return true;
+    }
+    if (authGate) authGate.classList.remove('is-hidden');
+    return false;
   }
 
   function setupTokenPersistence(inputEl, storageKey, statusEl) {
@@ -237,6 +261,8 @@ const AdminShared = (() => {
     setupAuthGate,
     getStoredPassword,
     setStoredPassword,
+    isAuthenticated,
+    requireAuthOrRedirect,
     setupTokenPersistence,
     githubRequest,
     loadFileDoc,
