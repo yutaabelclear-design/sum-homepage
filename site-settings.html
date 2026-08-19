@@ -232,7 +232,7 @@
       });
     }
 
-    loadBtn.addEventListener('click', async () => {
+    async function loadCurrentContent() {
       if (!githubTokenInput.value.trim()) {
         loadStatus.textContent = 'GitHubトークンを入力してください。';
         return;
@@ -242,9 +242,23 @@
         const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
         currentSha = sha;
         fillForm(doc);
-        loadStatus.textContent = '読み込みました。';
+        loadStatus.textContent = '現在の内容を読み込みました。';
       } catch (err) {
         loadStatus.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadBtn.addEventListener('click', loadCurrentContent);
+
+    // トークンが既に保存されている場合は、ページを開いた時点で自動的に読み込む
+    if (githubTokenInput.value.trim()) {
+      loadCurrentContent();
+    }
+
+    // トークンを入力し終えたタイミング(フォーカスが外れた時)でも自動的に読み込む
+    githubTokenInput.addEventListener('blur', () => {
+      if (githubTokenInput.value.trim()) {
+        loadCurrentContent();
       }
     });
 
