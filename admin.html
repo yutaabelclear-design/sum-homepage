@@ -113,6 +113,23 @@
           <p>サイト内の写真(ロゴ・ヒーロー画像・各ページの写真など)を差し替えられます。</p>
           <a href="images-admin.html" class="btn primary">画像管理ページを開く</a>
         </article>
+
+        <article class="detail-card">
+          <h3>管理者パスワードの変更</h3>
+          <form id="passwordForm" class="contact-form">
+            <label>
+              現在のパスワード
+              <input type="password" id="currentPassword" autocomplete="off" required />
+            </label>
+            <label>
+              新しいパスワード
+              <input type="password" id="newPassword" autocomplete="off" required />
+            </label>
+            <button type="submit" class="btn primary">変更する</button>
+          </form>
+          <p id="passwordStatus" class="admin-status"></p>
+          <p class="admin-note">この変更は今使っているブラウザにのみ保存されます(サーバー側で共通管理しているわけではありません)。他の端末やブラウザでログインする人がいる場合は、新しいパスワードを直接伝えてください。</p>
+        </article>
       </div>
     </section>
   </main>
@@ -131,6 +148,24 @@
     const githubTokenInput = document.getElementById('githubToken');
     const githubStatus = document.getElementById('githubStatus');
     AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', githubStatus);
+
+    const passwordForm = document.getElementById('passwordForm');
+    const passwordStatus = document.getElementById('passwordStatus');
+
+    passwordForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const current = document.getElementById('currentPassword').value;
+      const next = document.getElementById('newPassword').value;
+      const stored = AdminShared.getStoredPassword(ADMIN_PASSWORD);
+      if (current !== stored) {
+        passwordStatus.textContent = '現在のパスワードが違います。';
+        return;
+      }
+      if (!next) return;
+      AdminShared.setStoredPassword(next);
+      passwordStatus.textContent = 'パスワードを変更しました。次回からこのブラウザでは新しいパスワードでログインしてください。';
+      passwordForm.reset();
+    });
 
     const tabNews = document.getElementById('tabNews');
     const tabReport = document.getElementById('tabReport');

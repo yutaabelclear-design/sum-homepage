@@ -27,7 +27,17 @@ const AdminShared = (() => {
     return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`;
   }
 
-  function setupAuthGate(password) {
+  const PASSWORD_STORAGE_KEY = 'sumAdminPassword';
+
+  function getStoredPassword(fallbackPassword) {
+    return localStorage.getItem(PASSWORD_STORAGE_KEY) || fallbackPassword;
+  }
+
+  function setStoredPassword(newPassword) {
+    localStorage.setItem(PASSWORD_STORAGE_KEY, newPassword);
+  }
+
+  function setupAuthGate(fallbackPassword) {
     const authGate = document.getElementById('authGate');
     const authForm = document.getElementById('authForm');
     const authError = document.getElementById('authError');
@@ -36,7 +46,7 @@ const AdminShared = (() => {
     authForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const value = document.getElementById('authPassword').value;
-      if (value === password) {
+      if (value === getStoredPassword(fallbackPassword)) {
         authGate.classList.add('is-hidden');
         adminMain.classList.remove('is-hidden');
       } else {
@@ -188,6 +198,8 @@ const AdminShared = (() => {
     formatDate,
     serializeDoc,
     setupAuthGate,
+    getStoredPassword,
+    setStoredPassword,
     setupTokenPersistence,
     githubRequest,
     loadFileDoc,
