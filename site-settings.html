@@ -339,7 +339,7 @@
           const { doc } = await AdminShared.loadFileDoc(githubTokenInput, page.file);
           labelInput.value = doc.querySelector('.detail-hero-content .section-label')?.textContent || '';
           titleInput.value = doc.querySelector('.detail-hero-content h1')?.textContent || '';
-          textInput.value = doc.querySelector('.detail-hero-content p')?.textContent || '';
+          textInput.value = doc.querySelector('.detail-hero-content p:not(.section-label)')?.textContent || '';
           status.textContent = '';
         } catch (err) {
           status.textContent = `読み込みに失敗しました: ${err.message}`;
@@ -360,7 +360,7 @@
           if (labelEl) labelEl.textContent = labelInput.value;
           const titleEl = doc.querySelector('.detail-hero-content h1');
           if (titleEl) titleEl.textContent = titleInput.value;
-          const textEl = doc.querySelector('.detail-hero-content p');
+          const textEl = doc.querySelector('.detail-hero-content p:not(.section-label)');
           if (textEl) textEl.textContent = textInput.value;
           await AdminShared.saveFileDoc(githubTokenInput, page.file, doc, sha, `Update ${page.file} hero text`);
           status.textContent = '保存しました。数分後にサイトへ反映されます。';
