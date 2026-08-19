@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>画像管理 | 静岡大学 学生フォーミュラ SUM</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="SUMトップへ">
+      <img src="assets/images/sum-logo.jpg" alt="SUM logo" />
+      <span>SUM</span>
+    </a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
+      <a href="news.html">News</a>
+      <a href="overview.html">Team</a>
+      <a href="members.html">Members</a>
+      <a href="activity.html">Activity</a>
+      <a href="vehicle.html">Vehicle</a>
+      <a href="sponsors.html">Sponsors</a>
+      <a href="recruit.html">Recruit</a>
+      <a href="results.html">Results</a>
+      <a href="blog.html">MONTHLY REPORT</a>
+      <a href="https://sum-blog.danchan522.chatgpt.site/" target="_blank" rel="noopener">SUM BLOG</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin.html">Manage</a>
+    </nav>
+  </header>
+
+  <div id="authGate" class="admin-gate">
+    <form id="authForm" class="contact-form admin-gate-form">
+      <h3 class="admin-gate-title">管理者ログイン</h3>
+      <label>
+        パスワード
+        <input type="password" id="authPassword" autocomplete="off" required />
+      </label>
+      <button type="submit" class="btn primary">ログイン</button>
+      <p id="authError" class="admin-error"></p>
+    </form>
+  </div>
+
+  <main class="detail-main is-hidden" id="adminMain">
+    <section class="detail-hero">
+      <img src="assets/images/hero-02.svg" alt="" />
+      <div class="detail-hero-content">
+        <div class="breadcrumb"><a href="index.html">TOP</a> / 画像管理</div>
+        <p class="section-label">ADMIN</p>
+        <h1>画像管理</h1>
+        <p>サイト内の写真を、ここから直接差し替えられます。HTMLの編集は不要です。差し替え後、数分でサイトへ反映されます。</p>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-wrap">
+        <article class="detail-card" style="margin-bottom:24px;">
+          <h3>GitHubトークン</h3>
+          <label class="admin-field">
+            GitHubトークン
+            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." class="admin-input" />
+          </label>
+          <p class="admin-note">トークンはこの端末のブラウザ内にのみ一時保存され、ファイルには保存されません。他の人に共有しないでください。</p>
+        </article>
+
+        <div id="imageGrid" class="image-admin-grid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Shizuoka University Formula Project SUM</p>
+    <a href="index.html">Back to top</a>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin-shared.js"></script>
+  <script>
+    const ADMIN_PASSWORD = 'sum-admin-2026';
+    AdminShared.setupAuthGate(ADMIN_PASSWORD);
+
+    const githubTokenInput = document.getElementById('githubToken');
+    AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', null);
+
+    const SLOTS = [
+      { label: 'ロゴ', path: 'assets/images/sum-logo.jpg' },
+      { label: 'トップ ヒーロー画像 1枚目', path: 'assets/images/hero-01.svg' },
+      { label: 'トップ ヒーロー画像 2枚目', path: 'assets/images/hero-02.svg' },
+      { label: 'トップ ヒーロー画像 3枚目', path: 'assets/images/hero-03.svg' },
+      { label: 'チーム写真', path: 'assets/images/team-photo.svg' },
+      { label: '活動写真', path: 'assets/images/activity-photo.svg' },
+      { label: '車両写真', path: 'assets/images/vehicle-photo.svg' },
+      { label: '車両写真(横長)', path: 'assets/images/vehicle-wide.svg' },
+      { label: 'スポンサー写真', path: 'assets/images/sponsor-photo.svg' },
+      { label: '新入部員募集写真', path: 'assets/images/recruit-photo.svg' },
+      { label: '大会実績写真', path: 'assets/images/result-car.svg' },
+      { label: 'ギャラリー写真 1枚目', path: 'assets/images/gallery-01.svg' },
+      { label: 'ギャラリー写真 2枚目', path: 'assets/images/gallery-02.svg' },
+      { label: 'ギャラリー写真 3枚目', path: 'assets/images/gallery-03.svg' },
+    ];
+
+    function loadImageDimensions(dataUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.naturalWidth || 800, height: img.naturalHeight || 600 });
+        img.onerror = () => resolve({ width: 800, height: 600 });
+        img.src = dataUrl;
+      });
+    }
+
+    function buildSvgWrapper(dataUrl, width, height) {
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><image href="${dataUrl}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" /></svg>`;
+    }
+
+    async function buildUploadBlob(file, targetPath) {
+      const isTargetSvg = targetPath.toLowerCase().endsWith('.svg');
+      const isFileSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+
+      if (!isTargetSvg || isFileSvg) {
+        return file;
+      }
+
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { width, height } = await loadImageDimensions(dataUrl);
+      const svgText = buildSvgWrapper(dataUrl, width, height);
+      return new File([svgText], file.name, { type: 'image/svg+xml' });
+    }
+
+    const grid = document.getElementById('imageGrid');
+
+    SLOTS.forEach((slot) => {
+      const card = document.createElement('article');
+      card.className = 'detail-card image-admin-card';
+
+      const preview = document.createElement('img');
+      preview.src = slot.path;
+      preview.alt = slot.label;
+      preview.className = 'image-admin-preview';
+
+      const title = document.createElement('h3');
+      title.textContent = slot.label;
+
+      const pathNote = document.createElement('p');
+      pathNote.className = 'admin-note';
+      pathNote.textContent = slot.path;
+
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = 'image/*';
+      fileInput.className = 'admin-input';
+
+      const uploadBtn = document.createElement('button');
+      uploadBtn.type = 'button';
+      uploadBtn.textContent = 'この画像に差し替える';
+      uploadBtn.className = 'btn primary';
+      uploadBtn.style.marginTop = '12px';
+
+      const status = document.createElement('p');
+      status.className = 'admin-status';
+
+      uploadBtn.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+          status.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        const file = fileInput.files[0];
+        if (!file) {
+          status.textContent = 'ファイルを選択してください。';
+          return;
+        }
+        uploadBtn.disabled = true;
+        status.textContent = 'アップロード中...';
+        try {
+          const uploadFile = await buildUploadBlob(file, slot.path);
+          await AdminShared.putBinaryFile(githubTokenInput, slot.path, uploadFile, `Update image: ${slot.label}`);
+          status.textContent = '更新しました。数分後にサイトへ反映されます。';
+          const reader = new FileReader();
+          reader.onload = () => { preview.src = reader.result; };
+          reader.readAsDataURL(file);
+        } catch (err) {
+          status.textContent = `失敗しました: ${err.message}`;
+        } finally {
+          uploadBtn.disabled = false;
+        }
+      });
+
+      card.appendChild(preview);
+      card.appendChild(title);
+      card.appendChild(pathNote);
+      card.appendChild(fileInput);
+      card.appendChild(uploadBtn);
+      card.appendChild(status);
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

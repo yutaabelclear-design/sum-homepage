@@ -126,6 +126,40 @@ const AdminShared = (() => {
     });
   }
 
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function getFileSha(tokenInputEl, path) {
+    try {
+      const current = await githubRequest(tokenInputEl, `${path}?ref=${GITHUB_BRANCH}`);
+      return current.sha;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function putBinaryFile(tokenInputEl, path, file, message) {
+    const base64 = await fileToBase64(file);
+    const sha = await getFileSha(tokenInputEl, path);
+    const body = {
+      message,
+      content: base64,
+      branch: GITHUB_BRANCH,
+    };
+    if (sha) body.sha = sha;
+    await githubRequest(tokenInputEl, path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
   function renderPostRow(label, onDelete) {
     const row = document.createElement('div');
     row.className = 'admin-post-row';
@@ -161,5 +195,8 @@ const AdminShared = (() => {
     insertSnippetIntoFile,
     setupCopyButton,
     renderPostRow,
+    fileToBase64,
+    getFileSha,
+    putBinaryFile,
   };
 })();
