@@ -83,9 +83,7 @@
             <label class="admin-field">メインコピー(英語見出し)<input type="text" id="heroCopy" class="admin-input" /></label>
             <label class="admin-field">メイン説明文<textarea id="heroText" class="admin-input" rows="3"></textarea></label>
             <label class="admin-field">メインボタン名<input type="text" id="primaryBtnLabel" class="admin-input" /></label>
-            <label class="admin-field">メインボタンのリンク先<input type="text" id="primaryBtnHref" class="admin-input" /></label>
             <label class="admin-field">サブボタン名<input type="text" id="ghostBtnLabel" class="admin-input" /></label>
-            <label class="admin-field">サブボタンのリンク先<input type="text" id="ghostBtnHref" class="admin-input" /></label>
           </article>
 
           <article class="detail-card" style="margin-bottom:24px;">
@@ -384,10 +382,8 @@
       document.getElementById('heroText').value = doc.querySelector('.hero-text')?.textContent || '';
       const primaryBtn = doc.querySelector('.hero-actions .btn.primary');
       document.getElementById('primaryBtnLabel').value = primaryBtn?.textContent || '';
-      document.getElementById('primaryBtnHref').value = primaryBtn?.getAttribute('href') || '';
       const ghostBtn = doc.querySelector('.hero-actions .btn.ghost');
       document.getElementById('ghostBtnLabel').value = ghostBtn?.textContent || '';
-      document.getElementById('ghostBtnHref').value = ghostBtn?.getAttribute('href') || '';
       document.getElementById('linkSectionTitle').value = doc.querySelector('.link-section .section-head h2')?.textContent || '';
       document.getElementById('linkSectionText').value = doc.querySelector('.link-section .section-head p')?.textContent || '';
 
@@ -458,16 +454,10 @@
         if (heroTextEl) heroTextEl.textContent = document.getElementById('heroText').value;
 
         const primaryBtn = doc.querySelector('.hero-actions .btn.primary');
-        if (primaryBtn) {
-          primaryBtn.textContent = document.getElementById('primaryBtnLabel').value;
-          primaryBtn.setAttribute('href', document.getElementById('primaryBtnHref').value);
-        }
+        if (primaryBtn) primaryBtn.textContent = document.getElementById('primaryBtnLabel').value;
 
         const ghostBtn = doc.querySelector('.hero-actions .btn.ghost');
-        if (ghostBtn) {
-          ghostBtn.textContent = document.getElementById('ghostBtnLabel').value;
-          ghostBtn.setAttribute('href', document.getElementById('ghostBtnHref').value);
-        }
+        if (ghostBtn) ghostBtn.textContent = document.getElementById('ghostBtnLabel').value;
 
         const linkSectionTitle = doc.querySelector('.link-section .section-head h2');
         if (linkSectionTitle) linkSectionTitle.textContent = document.getElementById('linkSectionTitle').value;
