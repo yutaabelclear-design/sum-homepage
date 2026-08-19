@@ -1344,11 +1344,12 @@ a {
 }
 
 .story-block-media img {
+  display: block;
   width: 100%;
+  height: auto;
   border-radius: 26px;
   box-shadow: var(--shadow);
-  object-fit: cover;
-  aspect-ratio: 4 / 3;
+  object-fit: contain;
 }
 
 .story-block-caption {
