@@ -425,6 +425,18 @@ a {
   font-size: 26px;
 }
 
+.news-card img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 14px;
+}
+
+.news-full-list .news-card img {
+  max-height: 320px;
+}
+
 .news-card time {
   color: var(--orange-deep);
   font-weight: 900;

@@ -197,16 +197,22 @@ if (blogModal) {
 
 const newsModal = document.getElementById('newsModal');
 if (newsModal) {
+  const newsModalImg = document.getElementById('newsModalImg');
   const newsModalTime = document.getElementById('newsModalTime');
   const newsModalTitle = document.getElementById('newsModalTitle');
   const newsModalBody = document.getElementById('newsModalBody');
   const newsModalClose = document.getElementById('newsModalClose');
 
   function openNewsModal(card) {
+    const img = card.querySelector('img');
     const time = card.querySelector('time');
     const title = card.querySelector('h3');
     const body = card.querySelector('p');
 
+    if (newsModalImg) {
+      newsModalImg.src = img ? img.src : '';
+      newsModalImg.alt = img ? img.alt : '';
+    }
     newsModalTime.textContent = time ? time.textContent : '';
     newsModalTitle.textContent = title ? title.textContent : '';
     newsModalBody.textContent = body ? body.textContent : '';
@@ -215,6 +221,7 @@ if (newsModal) {
 
   function closeNewsModal() {
     newsModal.hidden = true;
+    if (newsModalImg) newsModalImg.src = '';
   }
 
   document.querySelectorAll('.news-full-list .news-card').forEach((card) => {

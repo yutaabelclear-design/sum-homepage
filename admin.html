@@ -87,9 +87,9 @@
               本文
               <textarea id="postBody" rows="5" placeholder="内容を入力してください"></textarea>
             </label>
-            <label id="fileFieldWrap" class="is-hidden">
-              報告書ファイル(任意・PDFなど)
-              <input type="file" id="postFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" />
+            <label id="fileFieldWrap">
+              <span id="fileFieldLabel">写真(任意)</span>
+              <input type="file" id="postFile" accept="image/*" />
             </label>
             <button type="submit" class="btn primary">投稿する</button>
           </form>
@@ -169,7 +169,7 @@
 
     const tabNews = document.getElementById('tabNews');
     const tabReport = document.getElementById('tabReport');
-    const fileFieldWrap = document.getElementById('fileFieldWrap');
+    const fileFieldLabel = document.getElementById('fileFieldLabel');
     const postForm = document.getElementById('postForm');
     const postStatus = document.getElementById('postStatus');
     const postFileInput = document.getElementById('postFile');
@@ -180,7 +180,13 @@
       activeType = type;
       tabNews.classList.toggle('is-active', type === 'news');
       tabReport.classList.toggle('is-active', type === 'report');
-      fileFieldWrap.classList.toggle('is-hidden', type !== 'report');
+      if (type === 'report') {
+        fileFieldLabel.textContent = '報告書ファイル(任意・PDFなど)';
+        postFileInput.accept = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*';
+      } else {
+        fileFieldLabel.textContent = '写真(任意)';
+        postFileInput.accept = 'image/*';
+      }
       postStatus.textContent = '';
     }
 
@@ -194,6 +200,13 @@
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+    }
+
+    async function uploadNewsImage(file) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `assets/images/news-${Date.now()}.${ext}`;
+      await AdminShared.putBinaryFile(githubTokenInput, path, file, 'Add news image');
+      return path;
     }
 
     async function uploadReportFile(file) {
@@ -231,8 +244,14 @@
       postStatus.textContent = '投稿中...';
       try {
         if (activeType === 'news') {
-          const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
-          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          const imgFile = postFileInput.files[0];
+          let imgHtml = '';
+          if (imgFile) {
+            const imgPath = await uploadNewsImage(imgFile);
+            imgHtml = `<img src="${imgPath}" alt="${AdminShared.escapeHtml(title)}" />`;
+          }
+          const newsSnippet = `<article class="news-card" id="news-${iso}">${imgHtml}<time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
+          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}">${imgHtml}<time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
           await AdminShared.insertSnippetIntoFile(githubTokenInput, 'news.html', 'class="news-full-list reveal">', newsSnippet, 'Add news post');
           await AdminShared.insertSnippetIntoFile(githubTokenInput, 'index.html', 'class="news-list reveal">', indexSnippet, 'Add news post to homepage');
         } else {

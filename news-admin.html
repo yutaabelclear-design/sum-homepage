@@ -72,6 +72,10 @@
               本文
               <textarea id="newsBody" rows="4" placeholder="お知らせの本文を入力してください"></textarea>
             </label>
+            <label>
+              写真(任意)
+              <input type="file" id="newsPhoto" accept="image/*" />
+            </label>
             <button type="submit" class="btn primary">スニペットを生成</button>
           </form>
         </article>
@@ -183,6 +187,13 @@
 
     loadPostsBtn.addEventListener('click', renderPostList);
 
+    async function uploadNewsImage(file) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `assets/images/news-${Date.now()}.${ext}`;
+      await AdminShared.putBinaryFile(githubTokenInput, path, file, 'Add news image');
+      return path;
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const dateValue = document.getElementById('newsDate').value;
@@ -192,14 +203,20 @@
 
       const { iso, label } = AdminShared.formatDate(dateValue);
       const bodyHtml = body ? `<p>${AdminShared.escapeHtml(body)}</p>` : '';
-      const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
-      output.value = newsSnippet;
-
       const token = githubTokenInput.value.trim();
+      const photoFile = document.getElementById('newsPhoto').files[0];
+
       if (token) {
         githubStatus.textContent = '投稿中...';
         try {
-          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          let imgHtml = '';
+          if (photoFile) {
+            const imgPath = await uploadNewsImage(photoFile);
+            imgHtml = `<img src="${imgPath}" alt="${AdminShared.escapeHtml(title)}" />`;
+          }
+          const newsSnippet = `<article class="news-card" id="news-${iso}">${imgHtml}<time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
+          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}">${imgHtml}<time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          output.value = newsSnippet;
           await AdminShared.insertSnippetIntoFile(githubTokenInput, 'news.html', 'class="news-full-list reveal">', newsSnippet, 'Add news post');
           await AdminShared.insertSnippetIntoFile(githubTokenInput, 'index.html', 'class="news-list reveal">', indexSnippet, 'Add news post to homepage');
           githubStatus.textContent = 'GitHubに投稿しました。数分後にサイトへ反映されます。';
@@ -210,7 +227,9 @@
         return;
       }
 
-      copyNote.textContent = '';
+      const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
+      output.value = newsSnippet;
+      copyNote.textContent = photoFile ? '※ 写真の添付にはGitHubトークンが必要です。' : '';
     });
 
     AdminShared.setupCopyButton(copyBtn, output, copyNote, 'コピーしました。news.html / index.html に貼り付けてください。');
