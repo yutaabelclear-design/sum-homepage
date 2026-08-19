@@ -97,8 +97,6 @@
           <button type="submit" class="btn primary">保存する</button>
           <p id="saveStatus" class="admin-status"></p>
         </form>
-
-        <div id="pageHeroFields" style="margin-top:24px;"></div>
       </div>
     </section>
   </main>
@@ -125,42 +123,42 @@
     let currentSha = null;
 
     const SECTIONS = [
-      { title: 'NEWSセクション', fields: [
+      { title: 'NEWS', page: 'news.html', fields: [
         { id: 'newsLabel', label: 'ラベル', sel: '#news .section-head .section-label' },
         { id: 'newsTitle', label: '見出し', sel: '#news .section-head h2' },
         { id: 'newsText', label: '説明文', sel: '#news .section-head p', multiline: true },
       ]},
-      { title: 'チーム紹介(ストーリー内)', image: { path: 'assets/images/team-photo.svg', label: 'チーム紹介の写真' }, fields: [
+      { title: 'チーム紹介', page: 'overview.html', image: { path: 'assets/images/team-photo.svg', label: 'チーム紹介の写真' }, fields: [
         { id: 'teamLabel', label: 'ラベル', sel: '#team > p.section-label' },
         { id: 'teamTitle', label: '見出し', sel: '#team > h2' },
         { id: 'teamText', label: '説明文', sel: '#team > p:not(.section-label)', multiline: true },
       ]},
-      { title: '活動内容(ストーリー内)', image: { path: 'assets/images/activity-photo.svg', label: '活動内容の写真' }, fields: [
+      { title: '活動内容', page: 'activity.html', image: { path: 'assets/images/activity-photo.svg', label: '活動内容の写真' }, fields: [
         { id: 'activityLabel', label: 'ラベル', sel: '#activity > p.section-label' },
         { id: 'activityTitle', label: '見出し', sel: '#activity > h2' },
         { id: 'activityText', label: '説明文', sel: '#activity > p:not(.section-label)', multiline: true },
       ]},
-      { title: 'メンバー紹介(ストーリー内)', fields: [
+      { title: 'メンバー紹介', page: 'members.html', fields: [
         { id: 'membersLabel', label: 'ラベル', sel: '#members > p.section-label' },
         { id: 'membersTitle', label: '見出し', sel: '#members > h2' },
       ]},
-      { title: '車両紹介(ストーリー内)', image: { path: 'assets/images/vehicle-wide.svg', label: '車両紹介の写真' }, fields: [
+      { title: '車両紹介', page: 'vehicle.html', image: { path: 'assets/images/vehicle-wide.svg', label: '車両紹介の写真' }, fields: [
         { id: 'vehicleLabel', label: 'ラベル', sel: '#vehicle > p.section-label' },
         { id: 'vehicleTitle', label: '見出し', sel: '#vehicle > h2' },
         { id: 'vehicleText', label: '説明文', sel: '#vehicle > p:not(.section-label)', multiline: true },
       ]},
-      { title: 'スポンサー紹介(ストーリー内)', fields: [
+      { title: 'スポンサー紹介', page: 'sponsors.html', fields: [
         { id: 'sponsorsLabel', label: 'ラベル', sel: '#sponsors > p.section-label' },
         { id: 'sponsorsTitle', label: '見出し', sel: '#sponsors > h2' },
         { id: 'sponsorsNote', label: '注記文', sel: '#sponsors > p.note', multiline: true },
       ]},
-      { title: '新入部員募集セクション', image: { path: 'assets/images/recruit-photo.svg', label: '募集セクションの写真' }, fields: [
+      { title: '新入部員募集', page: 'recruit.html', image: { path: 'assets/images/recruit-photo.svg', label: '募集セクションの写真' }, fields: [
         { id: 'recruitLabel', label: 'ラベル', sel: '#recruit .section-label' },
         { id: 'recruitTitle', label: '見出し', sel: '#recruit h2' },
         { id: 'recruitText1', label: '説明文1', sel: '#recruit p:nth-of-type(2)', multiline: true },
         { id: 'recruitText2', label: '説明文2', sel: '#recruit p:nth-of-type(3)', multiline: true },
       ]},
-      { title: '大会実績セクション', image: { path: 'assets/images/result-car.svg', label: 'カード内の写真' }, fields: [
+      { title: '大会実績', page: 'results.html', image: { path: 'assets/images/result-car.svg', label: 'カード内の写真' }, fields: [
         { id: 'resultsLabel', label: 'ラベル', sel: '#results .section-head .section-label' },
         { id: 'resultsTitle', label: '見出し', sel: '#results .section-head h2' },
         { id: 'resultsText', label: '説明文', sel: '#results .section-head p', multiline: true },
@@ -168,17 +166,109 @@
         { id: 'resultsCardTitle', label: 'カード内の見出し', sel: '#results .result-card h3' },
         { id: 'resultsCardText', label: 'カード内の説明文', sel: '#results .result-card p', multiline: true },
       ]},
-      { title: 'ギャラリーセクション', fields: [
+      { title: 'ギャラリー', page: 'gallery.html', fields: [
         { id: 'galleryLabel', label: 'ラベル', sel: '#gallery .section-head .section-label' },
         { id: 'galleryTitle', label: '見出し', sel: '#gallery .section-head h2' },
         { id: 'galleryText', label: '説明文', sel: '#gallery .section-head p', multiline: true },
       ]},
-      { title: 'お問い合わせセクション', fields: [
+      { title: 'お問い合わせ', page: 'contact.html', fields: [
         { id: 'contactLabel', label: 'ラベル', sel: '#contact .section-label' },
         { id: 'contactTitle', label: '見出し', sel: '#contact h2' },
         { id: 'contactText', label: '説明文', sel: '#contact .split > div > p:nth-of-type(2)', multiline: true },
       ]},
+      { title: 'MONTHLY REPORT', page: 'blog.html', fields: [] },
     ];
+
+    function buildPageHeroBlock(container, file) {
+      const wrap = document.createElement('div');
+      wrap.style.marginTop = '18px';
+      wrap.style.paddingTop = '18px';
+      wrap.style.borderTop = '1px solid rgba(0,0,0,0.08)';
+
+      const heading = document.createElement('p');
+      heading.className = 'admin-note';
+      heading.textContent = `${file} 自体の見出し(ページ上部の大きなタイトル部分)`;
+      wrap.appendChild(heading);
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.className = 'admin-input';
+      const labelField = document.createElement('label');
+      labelField.className = 'admin-field';
+      labelField.textContent = 'ラベル';
+      labelField.appendChild(labelInput);
+      wrap.appendChild(labelField);
+
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.className = 'admin-input';
+      const titleField = document.createElement('label');
+      titleField.className = 'admin-field';
+      titleField.textContent = '見出し';
+      titleField.appendChild(titleInput);
+      wrap.appendChild(titleField);
+
+      const textInput = document.createElement('textarea');
+      textInput.rows = 3;
+      textInput.className = 'admin-input';
+      const textField = document.createElement('label');
+      textField.className = 'admin-field';
+      textField.textContent = '説明文';
+      textField.appendChild(textInput);
+      wrap.appendChild(textField);
+
+      const saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.textContent = 'この見出しを保存する';
+      saveBtn.className = 'btn primary';
+      wrap.appendChild(saveBtn);
+
+      const status = document.createElement('p');
+      status.className = 'admin-status';
+      wrap.appendChild(status);
+
+      async function loadPageHero() {
+        if (!githubTokenInput.value.trim()) return;
+        status.textContent = '読み込み中...';
+        try {
+          const { doc } = await AdminShared.loadFileDoc(githubTokenInput, file);
+          labelInput.value = doc.querySelector('.detail-hero-content .section-label')?.textContent || '';
+          titleInput.value = doc.querySelector('.detail-hero-content h1')?.textContent || '';
+          textInput.value = doc.querySelector('.detail-hero-content p:not(.section-label)')?.textContent || '';
+          status.textContent = '';
+        } catch (err) {
+          status.textContent = `読み込みに失敗しました: ${err.message}`;
+        }
+      }
+
+      saveBtn.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+          status.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        saveBtn.disabled = true;
+        status.textContent = '保存中...';
+        try {
+          const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, file);
+          const labelEl = doc.querySelector('.detail-hero-content .section-label');
+          if (labelEl) labelEl.textContent = labelInput.value;
+          const titleEl = doc.querySelector('.detail-hero-content h1');
+          if (titleEl) titleEl.textContent = titleInput.value;
+          const textEl = doc.querySelector('.detail-hero-content p:not(.section-label)');
+          if (textEl) textEl.textContent = textInput.value;
+          await AdminShared.saveFileDoc(githubTokenInput, file, doc, sha, `Update ${file} hero text`);
+          status.textContent = '保存しました。数分後にサイトへ反映されます。';
+        } catch (err) {
+          status.textContent = `保存に失敗しました: ${err.message}`;
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      container.appendChild(wrap);
+      return loadPageHero;
+    }
 
     const dynamicFieldsEl = document.getElementById('dynamicFields');
     SECTIONS.forEach((section) => {
@@ -189,6 +279,13 @@
       const h3 = document.createElement('h3');
       h3.textContent = section.title;
       card.appendChild(h3);
+
+      if (section.fields.length) {
+        const sectionNote = document.createElement('p');
+        sectionNote.className = 'admin-note';
+        sectionNote.textContent = 'トップページ(index.html)内での表示';
+        card.appendChild(sectionNote);
+      }
 
       if (section.image) {
         const imgLabel = document.createElement('p');
@@ -267,112 +364,11 @@
         card.appendChild(label);
       });
 
-      dynamicFieldsEl.appendChild(card);
-    });
-
-    const PAGE_HEROES = [
-      { file: 'news.html', title: 'News ページ見出し' },
-      { file: 'overview.html', title: 'Team ページ見出し' },
-      { file: 'members.html', title: 'Members ページ見出し' },
-      { file: 'activity.html', title: 'Activity ページ見出し' },
-      { file: 'vehicle.html', title: 'Vehicle ページ見出し' },
-      { file: 'sponsors.html', title: 'Sponsors ページ見出し' },
-      { file: 'recruit.html', title: 'Recruit ページ見出し' },
-      { file: 'results.html', title: 'Results ページ見出し' },
-      { file: 'blog.html', title: 'MONTHLY REPORT ページ見出し' },
-      { file: 'gallery.html', title: 'Gallery ページ見出し' },
-      { file: 'contact.html', title: 'Contact ページ見出し' },
-    ];
-
-    const pageHeroFieldsEl = document.getElementById('pageHeroFields');
-
-    PAGE_HEROES.forEach((page) => {
-      const card = document.createElement('article');
-      card.className = 'detail-card';
-      card.style.marginBottom = '24px';
-
-      const h3 = document.createElement('h3');
-      h3.textContent = page.title;
-      card.appendChild(h3);
-
-      const labelInput = document.createElement('input');
-      labelInput.type = 'text';
-      labelInput.className = 'admin-input';
-      const labelField = document.createElement('label');
-      labelField.className = 'admin-field';
-      labelField.textContent = 'ラベル';
-      labelField.appendChild(labelInput);
-      card.appendChild(labelField);
-
-      const titleInput = document.createElement('input');
-      titleInput.type = 'text';
-      titleInput.className = 'admin-input';
-      const titleField = document.createElement('label');
-      titleField.className = 'admin-field';
-      titleField.textContent = '見出し';
-      titleField.appendChild(titleInput);
-      card.appendChild(titleField);
-
-      const textInput = document.createElement('textarea');
-      textInput.rows = 3;
-      textInput.className = 'admin-input';
-      const textField = document.createElement('label');
-      textField.className = 'admin-field';
-      textField.textContent = '説明文';
-      textField.appendChild(textInput);
-      card.appendChild(textField);
-
-      const saveBtn = document.createElement('button');
-      saveBtn.type = 'button';
-      saveBtn.textContent = '保存する';
-      saveBtn.className = 'btn primary';
-      card.appendChild(saveBtn);
-
-      const status = document.createElement('p');
-      status.className = 'admin-status';
-      card.appendChild(status);
-
-      async function loadPageHero() {
-        if (!githubTokenInput.value.trim()) return;
-        status.textContent = '読み込み中...';
-        try {
-          const { doc } = await AdminShared.loadFileDoc(githubTokenInput, page.file);
-          labelInput.value = doc.querySelector('.detail-hero-content .section-label')?.textContent || '';
-          titleInput.value = doc.querySelector('.detail-hero-content h1')?.textContent || '';
-          textInput.value = doc.querySelector('.detail-hero-content p:not(.section-label)')?.textContent || '';
-          status.textContent = '';
-        } catch (err) {
-          status.textContent = `読み込みに失敗しました: ${err.message}`;
-        }
+      if (section.page) {
+        section.loadPageHero = buildPageHeroBlock(card, section.page);
       }
 
-      saveBtn.addEventListener('click', async () => {
-        const token = githubTokenInput.value.trim();
-        if (!token) {
-          status.textContent = 'GitHubトークンを入力してください。';
-          return;
-        }
-        saveBtn.disabled = true;
-        status.textContent = '保存中...';
-        try {
-          const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, page.file);
-          const labelEl = doc.querySelector('.detail-hero-content .section-label');
-          if (labelEl) labelEl.textContent = labelInput.value;
-          const titleEl = doc.querySelector('.detail-hero-content h1');
-          if (titleEl) titleEl.textContent = titleInput.value;
-          const textEl = doc.querySelector('.detail-hero-content p:not(.section-label)');
-          if (textEl) textEl.textContent = textInput.value;
-          await AdminShared.saveFileDoc(githubTokenInput, page.file, doc, sha, `Update ${page.file} hero text`);
-          status.textContent = '保存しました。数分後にサイトへ反映されます。';
-        } catch (err) {
-          status.textContent = `保存に失敗しました: ${err.message}`;
-        } finally {
-          saveBtn.disabled = false;
-        }
-      });
-
-      page.load = loadPageHero;
-      pageHeroFieldsEl.appendChild(card);
+      dynamicFieldsEl.appendChild(card);
     });
 
     function fillForm(doc) {
@@ -405,7 +401,7 @@
         const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
         currentSha = sha;
         fillForm(doc);
-        await Promise.all(PAGE_HEROES.map((page) => page.load()));
+        await Promise.all(SECTIONS.filter((s) => s.loadPageHero).map((s) => s.loadPageHero()));
         loadStatus.textContent = '現在の内容を読み込みました。';
       } catch (err) {
         loadStatus.textContent = `読み込みに失敗しました: ${err.message}`;
