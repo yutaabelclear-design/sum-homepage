@@ -416,6 +416,21 @@
             bodyField.appendChild(bodyInput);
             blockWrap.appendChild(bodyField);
 
+            const existingUl = block.querySelector('.story-block-text ul');
+            let listInput = null;
+            if (existingUl) {
+              const items = Array.from(existingUl.querySelectorAll('li'));
+              listInput = document.createElement('textarea');
+              listInput.rows = Math.max(3, items.length);
+              listInput.className = 'admin-input';
+              listInput.value = items.map((li) => li.textContent.trim()).join('\n');
+              const listField = document.createElement('label');
+              listField.className = 'admin-field';
+              listField.textContent = '箇条書きリスト(1行につき1項目。※太字などの装飾は失われます)';
+              listField.appendChild(listInput);
+              blockWrap.appendChild(listField);
+            }
+
             const captionInput = document.createElement('input');
             captionInput.type = 'text';
             captionInput.className = 'admin-input';
@@ -483,7 +498,7 @@
             }
 
             blockWrap.dataset.index = index;
-            blockWrap._inputs = { numberInput, headingInput, bodyInput, captionInput };
+            blockWrap._inputs = { numberInput, headingInput, bodyInput, captionInput, listInput };
             blocksWrap.appendChild(blockWrap);
           });
 
@@ -507,7 +522,7 @@
                   const idx = Number(blockWrap.dataset.index);
                   const freshBlock = freshBlocks[idx];
                   if (!freshBlock) return;
-                  const { numberInput, headingInput, bodyInput, captionInput } = blockWrap._inputs;
+                  const { numberInput, headingInput, bodyInput, captionInput, listInput } = blockWrap._inputs;
 
                   const numberEl = freshBlock.querySelector('.story-block-number');
                   if (numberEl) numberEl.textContent = numberInput.value;
@@ -526,6 +541,15 @@
                     if (ul) textContainer.insertBefore(p, ul);
                     else textContainer.appendChild(p);
                   });
+
+                  if (listInput && ul) {
+                    Array.from(ul.querySelectorAll('li')).forEach((li) => li.remove());
+                    listInput.value.split('\n').map((s) => s.trim()).filter(Boolean).forEach((text) => {
+                      const li = freshDoc.createElement('li');
+                      li.textContent = text;
+                      ul.appendChild(li);
+                    });
+                  }
 
                   const captionEl = freshBlock.querySelector('.story-block-caption');
                   if (captionEl) captionEl.textContent = captionInput.value;
