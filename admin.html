@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>管理 | 静岡大学 学生フォーミュラ SUM</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="SUMトップへ">
+      <img src="assets/images/sum-logo.jpg" alt="SUM logo" />
+      <span>SUM</span>
+    </a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
+      <a href="news.html">News</a>
+      <a href="overview.html">Team</a>
+      <a href="members.html">Members</a>
+      <a href="activity.html">Activity</a>
+      <a href="vehicle.html">Vehicle</a>
+      <a href="sponsors.html">Sponsors</a>
+      <a href="recruit.html">Recruit</a>
+      <a href="results.html">Results</a>
+      <a href="blog.html">MONTHLY REPORT</a>
+      <a href="https://sum-blog.danchan522.chatgpt.site/" target="_blank" rel="noopener">SUM BLOG</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin.html">Manage</a>
+    </nav>
+  </header>
+
+  <div id="authGate" class="admin-gate">
+    <form id="authForm" class="contact-form admin-gate-form">
+      <h3 class="admin-gate-title">管理者ログイン</h3>
+      <label>
+        パスワード
+        <input type="password" id="authPassword" autocomplete="off" required />
+      </label>
+      <button type="submit" class="btn primary">ログイン</button>
+      <p id="authError" class="admin-error"></p>
+    </form>
+  </div>
+
+  <main class="detail-main is-hidden" id="adminMain">
+    <section class="detail-hero">
+      <img src="assets/images/hero-02.svg" alt="" />
+      <div class="detail-hero-content">
+        <div class="breadcrumb"><a href="index.html">TOP</a> / 管理</div>
+        <p class="section-label">ADMIN</p>
+        <h1>CONTENT STUDIO</h1>
+        <p>NewsとMONTHLY REPORTを、この1ページからまとめて投稿・削除できます。</p>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-wrap detail-grid">
+        <article class="detail-card">
+          <h3>GitHubトークン</h3>
+          <p>ここで入力したトークンは、News・MONTHLY REPORTどちらの投稿・削除にも共通で使われます。</p>
+          <label class="admin-field">
+            GitHubトークン
+            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." class="admin-input" />
+          </label>
+          <p class="admin-note">トークンはこの端末のブラウザ内にのみ一時保存され、ファイルには保存されません。他の人に共有しないでください。</p>
+          <p id="githubStatus" class="admin-status"></p>
+        </article>
+
+        <article class="detail-card">
+          <h3>投稿を作成</h3>
+          <div class="admin-tabs" role="tablist">
+            <button type="button" class="admin-tab is-active" id="tabNews" data-type="news">お知らせ</button>
+            <button type="button" class="admin-tab" id="tabReport" data-type="report">月例報告</button>
+          </div>
+          <form id="postForm" class="contact-form">
+            <label>
+              日付
+              <input type="date" id="postDate" required />
+            </label>
+            <label>
+              タイトル
+              <input type="text" id="postTitle" placeholder="例: 2026年 大会エントリー完了" required />
+            </label>
+            <label>
+              本文
+              <textarea id="postBody" rows="5" placeholder="内容を入力してください"></textarea>
+            </label>
+            <label id="fileFieldWrap" class="is-hidden">
+              報告書ファイル(任意・PDFなど)
+              <input type="file" id="postFile" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" />
+            </label>
+            <button type="submit" class="btn primary">投稿する</button>
+          </form>
+          <p id="postStatus" class="admin-status"></p>
+        </article>
+
+        <article class="detail-card">
+          <h3>お知らせの一覧・削除</h3>
+          <button type="button" id="loadNewsBtn" class="btn ghost admin-btn-ghost">お知らせの一覧を読み込む</button>
+          <div id="newsList" class="admin-post-list"></div>
+        </article>
+
+        <article class="detail-card">
+          <h3>月例報告の一覧・削除</h3>
+          <button type="button" id="loadReportsBtn" class="btn ghost admin-btn-ghost">月例報告の一覧を読み込む</button>
+          <div id="reportList" class="admin-post-list"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Shizuoka University Formula Project SUM</p>
+    <a href="index.html">Back to top</a>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin-shared.js"></script>
+  <script>
+    const ADMIN_PASSWORD = 'sum-admin-2026';
+    AdminShared.setupAuthGate(ADMIN_PASSWORD);
+
+    const githubTokenInput = document.getElementById('githubToken');
+    const githubStatus = document.getElementById('githubStatus');
+    AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', githubStatus);
+
+    const tabNews = document.getElementById('tabNews');
+    const tabReport = document.getElementById('tabReport');
+    const fileFieldWrap = document.getElementById('fileFieldWrap');
+    const postForm = document.getElementById('postForm');
+    const postStatus = document.getElementById('postStatus');
+    const postFileInput = document.getElementById('postFile');
+
+    let activeType = 'news';
+
+    function setActiveType(type) {
+      activeType = type;
+      tabNews.classList.toggle('is-active', type === 'news');
+      tabReport.classList.toggle('is-active', type === 'report');
+      fileFieldWrap.classList.toggle('is-hidden', type !== 'report');
+      postStatus.textContent = '';
+    }
+
+    tabNews.addEventListener('click', () => setActiveType('news'));
+    tabReport.addEventListener('click', () => setActiveType('report'));
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function uploadReportFile(file) {
+      const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
+      const filename = `report-${Date.now()}.${ext}`;
+      const base64 = await fileToBase64(file);
+      await AdminShared.githubRequest(githubTokenInput, `reports/${filename}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Add report file ${filename}`,
+          content: base64,
+          branch: AdminShared.GITHUB_BRANCH,
+        }),
+      });
+      return `reports/${filename}`;
+    }
+
+    postForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = githubTokenInput.value.trim();
+      if (!token) {
+        postStatus.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+
+      const dateValue = document.getElementById('postDate').value;
+      const title = document.getElementById('postTitle').value.trim();
+      const body = document.getElementById('postBody').value.trim();
+      if (!dateValue || !title) return;
+
+      const { iso, label } = AdminShared.formatDate(dateValue);
+      const bodyHtml = body ? `<p>${AdminShared.escapeHtml(body)}</p>` : '';
+
+      postStatus.textContent = '投稿中...';
+      try {
+        if (activeType === 'news') {
+          const newsSnippet = `<article class="news-card" id="news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</article>`;
+          const indexSnippet = `<a class="news-card" href="news.html#news-${iso}"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}</a>`;
+          await AdminShared.insertSnippetIntoFile(githubTokenInput, 'news.html', 'class="news-full-list reveal">', newsSnippet, 'Add news post');
+          await AdminShared.insertSnippetIntoFile(githubTokenInput, 'index.html', 'class="news-list reveal">', indexSnippet, 'Add news post to homepage');
+        } else {
+          const file = postFileInput.files[0];
+          let linkHtml = '';
+          if (file) {
+            const filePath = await uploadReportFile(file);
+            linkHtml = `<a class="link-more" href="${filePath}" target="_blank" rel="noopener">資料をダウンロード</a>`;
+          }
+          const snippet = `<article class="blog-post"><div class="blog-post-body"><time datetime="${iso}">${label}</time><h3>${AdminShared.escapeHtml(title)}</h3>${bodyHtml}${linkHtml}</div></article>`;
+          await AdminShared.insertSnippetIntoFile(githubTokenInput, 'blog.html', 'id="blogList">', snippet, 'Add monthly report');
+        }
+        postStatus.textContent = '投稿しました。数分後にサイトへ反映されます。';
+        postForm.reset();
+      } catch (err) {
+        postStatus.textContent = `投稿に失敗しました: ${err.message}`;
+      }
+    });
+
+    const loadNewsBtn = document.getElementById('loadNewsBtn');
+    const newsListEl = document.getElementById('newsList');
+
+    async function deleteNewsPost(postId) {
+      const newsFile = await AdminShared.loadFileDoc(githubTokenInput, 'news.html');
+      const target = newsFile.doc.getElementById(postId);
+      if (!target) throw new Error('news.htmlに投稿が見つかりませんでした');
+      target.remove();
+      await AdminShared.saveFileDoc(githubTokenInput, 'news.html', newsFile.doc, newsFile.sha, 'Delete news post');
+
+      const indexFile = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
+      const link = indexFile.doc.querySelector(`a.news-card[href="news.html#${postId}"]`);
+      if (link) {
+        link.remove();
+        await AdminShared.saveFileDoc(githubTokenInput, 'index.html', indexFile.doc, indexFile.sha, 'Delete news post from homepage');
+      }
+    }
+
+    async function renderNewsList() {
+      if (!githubTokenInput.value.trim()) {
+        newsListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      newsListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'news.html');
+        const posts = Array.from(doc.querySelectorAll('.news-full-list .news-card'));
+        newsListEl.innerHTML = '';
+        if (!posts.length) {
+          newsListEl.textContent = 'お知らせがありません。';
+          return;
+        }
+        posts.forEach((post) => {
+          const postId = post.id;
+          const title = post.querySelector('h3')?.textContent || '(無題)';
+          const time = post.querySelector('time')?.textContent || '';
+          const row = AdminShared.renderPostRow(`${time} ${title}`, async (event) => {
+            if (!confirm(`「${title}」を削除しますか?`)) return;
+            const delBtn = event.currentTarget;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteNewsPost(postId);
+              renderNewsList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          newsListEl.appendChild(row);
+        });
+      } catch (err) {
+        newsListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadNewsBtn.addEventListener('click', renderNewsList);
+
+    const loadReportsBtn = document.getElementById('loadReportsBtn');
+    const reportListEl = document.getElementById('reportList');
+
+    async function deleteReportPost(index) {
+      const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'blog.html');
+      const posts = doc.querySelectorAll('#blogList .blog-post');
+      if (!posts[index]) throw new Error('投稿が見つかりませんでした');
+      posts[index].remove();
+      await AdminShared.saveFileDoc(githubTokenInput, 'blog.html', doc, sha, 'Delete monthly report');
+    }
+
+    async function renderReportList() {
+      if (!githubTokenInput.value.trim()) {
+        reportListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      reportListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'blog.html');
+        const posts = Array.from(doc.querySelectorAll('#blogList .blog-post'));
+        reportListEl.innerHTML = '';
+        if (!posts.length) {
+          reportListEl.textContent = '投稿がありません。';
+          return;
+        }
+        posts.forEach((post, index) => {
+          const title = post.querySelector('h3')?.textContent || '(無題)';
+          const time = post.querySelector('time')?.textContent || '';
+          const row = AdminShared.renderPostRow(`${time} ${title}`, async (event) => {
+            if (!confirm(`「${title}」を削除しますか?`)) return;
+            const delBtn = event.currentTarget;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteReportPost(index);
+              renderReportList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          reportListEl.appendChild(row);
+        });
+      } catch (err) {
+        reportListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadReportsBtn.addEventListener('click', renderReportList);
+  </script>
+</body>
+</html>

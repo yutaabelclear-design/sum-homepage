@@ -1205,6 +1205,29 @@ a {
   cursor: pointer;
 }
 
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+.admin-tab {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-tab.is-active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--black);
+}
+
 @media (max-width: 560px) {
   .admin-gate-form {
     padding: 26px;
