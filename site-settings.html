@@ -573,6 +573,161 @@
 
     STORY_PAGES.forEach(buildStoryBlocksSection);
 
+    const CARD_PAGES = [
+      { file: 'sponsors.html', title: 'Sponsors ページ本文(カード)' },
+      { file: 'recruit.html', title: 'Recruit ページ本文(カード)' },
+    ];
+
+    function buildDetailCardsSection(page) {
+      const card = document.createElement('article');
+      card.className = 'detail-card';
+      card.style.marginBottom = '24px';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = page.title;
+      card.appendChild(h3);
+
+      const loadBtn = document.createElement('button');
+      loadBtn.type = 'button';
+      loadBtn.textContent = 'このページの本文を読み込む';
+      loadBtn.className = 'btn ghost admin-btn-ghost';
+      card.appendChild(loadBtn);
+
+      const status = document.createElement('p');
+      status.className = 'admin-status';
+      card.appendChild(status);
+
+      const blocksWrap = document.createElement('div');
+      card.appendChild(blocksWrap);
+
+      async function render() {
+        if (!githubTokenInput.value.trim()) {
+          status.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        status.textContent = '読み込み中...';
+        blocksWrap.innerHTML = '';
+        try {
+          const { doc } = await AdminShared.loadFileDoc(githubTokenInput, page.file);
+          const cards = Array.from(doc.querySelectorAll('.detail-section .detail-card'));
+          if (!cards.length) {
+            status.textContent = 'このページには編集可能なカードがありません。';
+            return;
+          }
+          status.textContent = '';
+
+          cards.forEach((cardEl, index) => {
+            const blockWrap = document.createElement('div');
+            blockWrap.style.marginTop = '18px';
+            blockWrap.style.paddingTop = '18px';
+            blockWrap.style.borderTop = '1px solid rgba(0,0,0,0.08)';
+
+            const headingEl = cardEl.querySelector('h2, h3');
+            const headingInput = document.createElement('input');
+            headingInput.type = 'text';
+            headingInput.className = 'admin-input';
+            headingInput.value = headingEl ? headingEl.textContent.trim() : '';
+            const headingField = document.createElement('label');
+            headingField.className = 'admin-field';
+            headingField.textContent = '見出し';
+            headingField.appendChild(headingInput);
+            blockWrap.appendChild(headingField);
+
+            const paragraphs = Array.from(cardEl.querySelectorAll('p'));
+            const bodyInput = document.createElement('textarea');
+            bodyInput.rows = 4;
+            bodyInput.className = 'admin-input';
+            bodyInput.value = paragraphs.map((p) => p.textContent.trim()).join('\n\n');
+            const bodyField = document.createElement('label');
+            bodyField.className = 'admin-field';
+            bodyField.textContent = '本文(空行で段落を分けられます。※太字などの装飾は失われます)';
+            bodyField.appendChild(bodyInput);
+            blockWrap.appendChild(bodyField);
+
+            const existingUl = cardEl.querySelector('ul');
+            let listInput = null;
+            if (existingUl) {
+              const items = Array.from(existingUl.querySelectorAll('li'));
+              listInput = document.createElement('textarea');
+              listInput.rows = Math.max(3, items.length);
+              listInput.className = 'admin-input';
+              listInput.value = items.map((li) => li.textContent.trim()).join('\n');
+              const listField = document.createElement('label');
+              listField.className = 'admin-field';
+              listField.textContent = '箇条書きリスト(1行につき1項目。※太字などの装飾は失われます)';
+              listField.appendChild(listInput);
+              blockWrap.appendChild(listField);
+            }
+
+            blockWrap.dataset.index = index;
+            blockWrap._inputs = { headingInput, bodyInput, listInput };
+            blocksWrap.appendChild(blockWrap);
+          });
+
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.textContent = 'このページの本文をまとめて保存する';
+          saveBtn.className = 'btn primary';
+          saveBtn.style.marginTop = '18px';
+          blocksWrap.appendChild(saveBtn);
+
+          saveBtn.addEventListener('click', async () => {
+            const token = githubTokenInput.value.trim();
+            if (!token) { status.textContent = 'GitHubトークンを入力してください。'; return; }
+            saveBtn.disabled = true;
+            status.textContent = '保存中...';
+            try {
+              await AdminShared.saveFileDocWithRetry(githubTokenInput, page.file, (freshDoc) => {
+                const freshCards = Array.from(freshDoc.querySelectorAll('.detail-section .detail-card'));
+                Array.from(blocksWrap.children).forEach((blockWrap) => {
+                  if (!blockWrap._inputs) return;
+                  const idx = Number(blockWrap.dataset.index);
+                  const freshCard = freshCards[idx];
+                  if (!freshCard) return;
+                  const { headingInput, bodyInput, listInput } = blockWrap._inputs;
+
+                  const headingEl = freshCard.querySelector('h2, h3');
+                  if (headingEl) headingEl.textContent = headingInput.value;
+
+                  const existingPs = Array.from(freshCard.querySelectorAll('p'));
+                  const newParas = bodyInput.value.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+                  existingPs.forEach((p) => p.remove());
+                  const ul = freshCard.querySelector('ul');
+                  newParas.forEach((text) => {
+                    const p = freshDoc.createElement('p');
+                    p.textContent = text;
+                    if (ul) freshCard.insertBefore(p, ul);
+                    else freshCard.appendChild(p);
+                  });
+
+                  if (listInput && ul) {
+                    Array.from(ul.querySelectorAll('li')).forEach((li) => li.remove());
+                    listInput.value.split('\n').map((s) => s.trim()).filter(Boolean).forEach((text) => {
+                      const li = freshDoc.createElement('li');
+                      li.textContent = text;
+                      ul.appendChild(li);
+                    });
+                  }
+                });
+              }, `Update detail cards in ${page.file}`);
+              status.textContent = '保存しました。数分後にサイトへ反映されます。';
+            } catch (err) {
+              status.textContent = `保存に失敗しました: ${err.message}`;
+            } finally {
+              saveBtn.disabled = false;
+            }
+          });
+        } catch (err) {
+          status.textContent = `読み込みに失敗しました: ${err.message}`;
+        }
+      }
+
+      loadBtn.addEventListener('click', render);
+      document.getElementById('storyBlocksFields').appendChild(card);
+    }
+
+    CARD_PAGES.forEach(buildDetailCardsSection);
+
     const dynamicFieldsEl = document.getElementById('dynamicFields');
     SECTIONS.forEach((section) => {
       const card = document.createElement('article');
