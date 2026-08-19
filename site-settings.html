@@ -93,6 +93,8 @@
           <button type="submit" class="btn primary">保存する</button>
           <p id="saveStatus" class="admin-status"></p>
         </form>
+
+        <div id="storyBlocksFields" style="margin-top:24px;"></div>
       </div>
     </section>
   </main>
@@ -330,6 +332,222 @@
       container.appendChild(wrap);
       return loadPageHero;
     }
+
+    const STORY_PAGES = [
+      { file: 'overview.html', title: 'Team ページ本文(ストーリーブロック)' },
+      { file: 'activity.html', title: 'Activity ページ本文(ストーリーブロック)' },
+      { file: 'vehicle.html', title: 'Vehicle ページ本文(ストーリーブロック)' },
+      { file: 'results.html', title: 'Results ページ本文(ストーリーブロック)' },
+      { file: 'contact.html', title: 'Contact ページ本文(ストーリーブロック)' },
+    ];
+
+    function buildStoryBlocksSection(page) {
+      const card = document.createElement('article');
+      card.className = 'detail-card';
+      card.style.marginBottom = '24px';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = page.title;
+      card.appendChild(h3);
+
+      const loadBtn = document.createElement('button');
+      loadBtn.type = 'button';
+      loadBtn.textContent = 'このページの本文を読み込む';
+      loadBtn.className = 'btn ghost admin-btn-ghost';
+      card.appendChild(loadBtn);
+
+      const status = document.createElement('p');
+      status.className = 'admin-status';
+      card.appendChild(status);
+
+      const blocksWrap = document.createElement('div');
+      card.appendChild(blocksWrap);
+
+      async function render() {
+        if (!githubTokenInput.value.trim()) {
+          status.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        status.textContent = '読み込み中...';
+        blocksWrap.innerHTML = '';
+        try {
+          const { doc } = await AdminShared.loadFileDoc(githubTokenInput, page.file);
+          const blocks = Array.from(doc.querySelectorAll('.story-blocks .story-block'));
+          if (!blocks.length) {
+            status.textContent = 'このページには本文ブロックがありません。';
+            return;
+          }
+          status.textContent = '';
+
+          blocks.forEach((block, index) => {
+            const blockWrap = document.createElement('div');
+            blockWrap.style.marginTop = '18px';
+            blockWrap.style.paddingTop = '18px';
+            blockWrap.style.borderTop = '1px solid rgba(0,0,0,0.08)';
+
+            const numberInput = document.createElement('input');
+            numberInput.type = 'text';
+            numberInput.className = 'admin-input';
+            numberInput.value = block.querySelector('.story-block-number')?.textContent || '';
+            const numberField = document.createElement('label');
+            numberField.className = 'admin-field';
+            numberField.textContent = '番号ラベル';
+            numberField.appendChild(numberInput);
+            blockWrap.appendChild(numberField);
+
+            const headingInput = document.createElement('input');
+            headingInput.type = 'text';
+            headingInput.className = 'admin-input';
+            headingInput.value = block.querySelector('.story-block-text h2')?.textContent || '';
+            const headingField = document.createElement('label');
+            headingField.className = 'admin-field';
+            headingField.textContent = '見出し';
+            headingField.appendChild(headingInput);
+            blockWrap.appendChild(headingField);
+
+            const paragraphs = Array.from(block.querySelectorAll('.story-block-text p'));
+            const bodyInput = document.createElement('textarea');
+            bodyInput.rows = 4;
+            bodyInput.className = 'admin-input';
+            bodyInput.value = paragraphs.map((p) => p.textContent.trim()).join('\n\n');
+            const bodyField = document.createElement('label');
+            bodyField.className = 'admin-field';
+            bodyField.textContent = '本文(空行で段落を分けられます。※太字などの装飾は失われます)';
+            bodyField.appendChild(bodyInput);
+            blockWrap.appendChild(bodyField);
+
+            const captionInput = document.createElement('input');
+            captionInput.type = 'text';
+            captionInput.className = 'admin-input';
+            captionInput.value = block.querySelector('.story-block-caption')?.textContent || '';
+            const captionField = document.createElement('label');
+            captionField.className = 'admin-field';
+            captionField.textContent = '写真キャプション';
+            captionField.appendChild(captionInput);
+            blockWrap.appendChild(captionField);
+
+            const imgEl = block.querySelector('.story-block-media img');
+            if (imgEl) {
+              const preview = document.createElement('img');
+              preview.className = 'image-admin-preview';
+              preview.src = absoluteImageUrl(imgEl.getAttribute('src'));
+              blockWrap.appendChild(preview);
+
+              const imgFileInput = document.createElement('input');
+              imgFileInput.type = 'file';
+              imgFileInput.accept = 'image/*';
+              imgFileInput.className = 'admin-input';
+              blockWrap.appendChild(imgFileInput);
+
+              imgFileInput.addEventListener('change', () => {
+                const f = imgFileInput.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => { preview.src = reader.result; };
+                reader.readAsDataURL(f);
+              });
+
+              const imgBtn = document.createElement('button');
+              imgBtn.type = 'button';
+              imgBtn.textContent = 'この写真を差し替える';
+              imgBtn.className = 'btn ghost admin-btn-ghost';
+              blockWrap.appendChild(imgBtn);
+
+              const imgStatus = document.createElement('p');
+              imgStatus.className = 'admin-status';
+              blockWrap.appendChild(imgStatus);
+
+              imgBtn.addEventListener('click', async () => {
+                const token = githubTokenInput.value.trim();
+                if (!token) { imgStatus.textContent = 'GitHubトークンを入力してください。'; return; }
+                const f = imgFileInput.files[0];
+                if (!f) { imgStatus.textContent = 'ファイルを選択してください。'; return; }
+                imgBtn.disabled = true;
+                imgStatus.textContent = 'アップロード中...';
+                try {
+                  const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
+                  const newPath = `assets/images/${page.file.replace('.html', '')}-block${index}-${Date.now()}.${ext}`;
+                  await AdminShared.putBinaryFile(githubTokenInput, newPath, f, `Update story block image in ${page.file}`);
+                  await AdminShared.saveFileDocWithRetry(githubTokenInput, page.file, (freshDoc) => {
+                    const freshBlocks = freshDoc.querySelectorAll('.story-blocks .story-block');
+                    const targetImg = freshBlocks[index]?.querySelector('.story-block-media img');
+                    if (targetImg) targetImg.setAttribute('src', newPath);
+                  }, `Update story block image in ${page.file}`);
+                  imgStatus.textContent = '更新しました。数分後にサイトへ反映されます。';
+                } catch (err) {
+                  imgStatus.textContent = `失敗しました: ${err.message}`;
+                } finally {
+                  imgBtn.disabled = false;
+                }
+              });
+            }
+
+            blockWrap.dataset.index = index;
+            blockWrap._inputs = { numberInput, headingInput, bodyInput, captionInput };
+            blocksWrap.appendChild(blockWrap);
+          });
+
+          const saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.textContent = 'このページの本文をまとめて保存する';
+          saveBtn.className = 'btn primary';
+          saveBtn.style.marginTop = '18px';
+          blocksWrap.appendChild(saveBtn);
+
+          saveBtn.addEventListener('click', async () => {
+            const token = githubTokenInput.value.trim();
+            if (!token) { status.textContent = 'GitHubトークンを入力してください。'; return; }
+            saveBtn.disabled = true;
+            status.textContent = '保存中...';
+            try {
+              await AdminShared.saveFileDocWithRetry(githubTokenInput, page.file, (freshDoc) => {
+                const freshBlocks = Array.from(freshDoc.querySelectorAll('.story-blocks .story-block'));
+                Array.from(blocksWrap.children).forEach((blockWrap) => {
+                  if (!blockWrap._inputs) return;
+                  const idx = Number(blockWrap.dataset.index);
+                  const freshBlock = freshBlocks[idx];
+                  if (!freshBlock) return;
+                  const { numberInput, headingInput, bodyInput, captionInput } = blockWrap._inputs;
+
+                  const numberEl = freshBlock.querySelector('.story-block-number');
+                  if (numberEl) numberEl.textContent = numberInput.value;
+
+                  const headingEl = freshBlock.querySelector('.story-block-text h2');
+                  if (headingEl) headingEl.textContent = headingInput.value;
+
+                  const textContainer = freshBlock.querySelector('.story-block-text');
+                  const existingPs = Array.from(textContainer.querySelectorAll('p'));
+                  const newParas = bodyInput.value.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+                  existingPs.forEach((p) => p.remove());
+                  const ul = textContainer.querySelector('ul');
+                  newParas.forEach((text) => {
+                    const p = freshDoc.createElement('p');
+                    p.textContent = text;
+                    if (ul) textContainer.insertBefore(p, ul);
+                    else textContainer.appendChild(p);
+                  });
+
+                  const captionEl = freshBlock.querySelector('.story-block-caption');
+                  if (captionEl) captionEl.textContent = captionInput.value;
+                });
+              }, `Update story blocks in ${page.file}`);
+              status.textContent = '保存しました。数分後にサイトへ反映されます。';
+            } catch (err) {
+              status.textContent = `保存に失敗しました: ${err.message}`;
+            } finally {
+              saveBtn.disabled = false;
+            }
+          });
+        } catch (err) {
+          status.textContent = `読み込みに失敗しました: ${err.message}`;
+        }
+      }
+
+      loadBtn.addEventListener('click', render);
+      document.getElementById('storyBlocksFields').appendChild(card);
+    }
+
+    STORY_PAGES.forEach(buildStoryBlocksSection);
 
     const dynamicFieldsEl = document.getElementById('dynamicFields');
     SECTIONS.forEach((section) => {
