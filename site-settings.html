@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>サイト設定 | 静岡大学 学生フォーミュラ SUM</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="SUMトップへ">
+      <img src="assets/images/sum-logo.jpg" alt="SUM logo" />
+      <span>SUM</span>
+    </a>
+    <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="siteNav" aria-label="メニューを開く">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="site-nav" id="siteNav" aria-label="主要ナビゲーション">
+      <a href="news.html">News</a>
+      <a href="overview.html">Team</a>
+      <a href="members.html">Members</a>
+      <a href="activity.html">Activity</a>
+      <a href="vehicle.html">Vehicle</a>
+      <a href="sponsors.html">Sponsors</a>
+      <a href="recruit.html">Recruit</a>
+      <a href="results.html">Results</a>
+      <a href="blog.html">MONTHLY REPORT</a>
+      <a href="https://sum-blog.danchan522.chatgpt.site/" target="_blank" rel="noopener">SUM BLOG</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin.html">Manage</a>
+    </nav>
+  </header>
+
+  <div id="authGate" class="admin-gate">
+    <form id="authForm" class="contact-form admin-gate-form">
+      <h3 class="admin-gate-title">管理者ログイン</h3>
+      <label>
+        パスワード
+        <input type="password" id="authPassword" autocomplete="off" required />
+      </label>
+      <button type="submit" class="btn primary">ログイン</button>
+      <p id="authError" class="admin-error"></p>
+    </form>
+  </div>
+
+  <main class="detail-main is-hidden" id="adminMain">
+    <section class="detail-hero">
+      <img src="assets/images/hero-02.svg" alt="" />
+      <div class="detail-hero-content">
+        <div class="breadcrumb"><a href="index.html">TOP</a> / サイト設定</div>
+        <p class="section-label">ADMIN</p>
+        <h1>サイト設定</h1>
+        <p>トップページの文章・ボタン・見出しを、ここから直接編集できます。HTMLの編集は不要です。</p>
+      </div>
+    </section>
+
+    <section class="detail-section">
+      <div class="detail-wrap">
+        <article class="detail-card" style="margin-bottom:24px;">
+          <h3>GitHubトークン</h3>
+          <label class="admin-field">
+            GitHubトークン
+            <input type="password" id="githubToken" autocomplete="off" placeholder="github_pat_..." class="admin-input" />
+          </label>
+          <p class="admin-note">トークンはこの端末のブラウザ内にのみ保存され、ファイルには保存されません。他の人に共有しないでください。</p>
+        </article>
+
+        <article class="detail-card" style="margin-bottom:24px;">
+          <button type="button" id="loadBtn" class="btn ghost admin-btn-ghost">現在の内容を読み込む</button>
+          <p id="loadStatus" class="admin-status"></p>
+        </article>
+
+        <form id="settingsForm">
+          <article class="detail-card" style="margin-bottom:24px;">
+            <h3>ロゴ・サイト名</h3>
+            <label class="admin-field">サイト名<input type="text" id="siteName" class="admin-input" /></label>
+            <label class="admin-field">団体の英語表記(ヒーロー上部ラベル)<input type="text" id="heroKicker" class="admin-input" /></label>
+          </article>
+
+          <article class="detail-card" style="margin-bottom:24px;">
+            <h3>メインビジュアル</h3>
+            <label class="admin-field">メインコピー(英語見出し)<input type="text" id="heroCopy" class="admin-input" /></label>
+            <label class="admin-field">メイン説明文<textarea id="heroText" class="admin-input" rows="3"></textarea></label>
+            <label class="admin-field">メインボタン名<input type="text" id="primaryBtnLabel" class="admin-input" /></label>
+            <label class="admin-field">メインボタンのリンク先<input type="text" id="primaryBtnHref" class="admin-input" /></label>
+            <label class="admin-field">サブボタン名<input type="text" id="ghostBtnLabel" class="admin-input" /></label>
+            <label class="admin-field">サブボタンのリンク先<input type="text" id="ghostBtnHref" class="admin-input" /></label>
+          </article>
+
+          <article class="detail-card" style="margin-bottom:24px;">
+            <h3>ページ案内セクション</h3>
+            <label class="admin-field">見出し<input type="text" id="linkSectionTitle" class="admin-input" /></label>
+            <label class="admin-field">案内文<input type="text" id="linkSectionText" class="admin-input" /></label>
+          </article>
+
+          <button type="submit" class="btn primary">保存する</button>
+          <p id="saveStatus" class="admin-status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2026 Shizuoka University Formula Project SUM</p>
+    <a href="index.html">Back to top</a>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/admin-shared.js"></script>
+  <script>
+    const ADMIN_PASSWORD = 'sum-admin-2026';
+    AdminShared.setupAuthGate(ADMIN_PASSWORD);
+
+    const githubTokenInput = document.getElementById('githubToken');
+    AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', null);
+
+    const loadBtn = document.getElementById('loadBtn');
+    const loadStatus = document.getElementById('loadStatus');
+    const settingsForm = document.getElementById('settingsForm');
+    const saveStatus = document.getElementById('saveStatus');
+
+    let currentSha = null;
+
+    function fillForm(doc) {
+      document.getElementById('siteName').value = doc.querySelector('.brand span')?.textContent || '';
+      document.getElementById('heroKicker').value = doc.querySelector('.hero-kicker')?.textContent || '';
+      document.getElementById('heroCopy').value = doc.getElementById('heroTitle')?.dataset.text || '';
+      document.getElementById('heroText').value = doc.querySelector('.hero-text')?.textContent || '';
+      const primaryBtn = doc.querySelector('.hero-actions .btn.primary');
+      document.getElementById('primaryBtnLabel').value = primaryBtn?.textContent || '';
+      document.getElementById('primaryBtnHref').value = primaryBtn?.getAttribute('href') || '';
+      const ghostBtn = doc.querySelector('.hero-actions .btn.ghost');
+      document.getElementById('ghostBtnLabel').value = ghostBtn?.textContent || '';
+      document.getElementById('ghostBtnHref').value = ghostBtn?.getAttribute('href') || '';
+      document.getElementById('linkSectionTitle').value = doc.querySelector('.link-section .section-head h2')?.textContent || '';
+      document.getElementById('linkSectionText').value = doc.querySelector('.link-section .section-head p')?.textContent || '';
+    }
+
+    loadBtn.addEventListener('click', async () => {
+      if (!githubTokenInput.value.trim()) {
+        loadStatus.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      loadStatus.textContent = '読み込み中...';
+      try {
+        const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
+        currentSha = sha;
+        fillForm(doc);
+        loadStatus.textContent = '読み込みました。';
+      } catch (err) {
+        loadStatus.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    });
+
+    settingsForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = githubTokenInput.value.trim();
+      if (!token) {
+        saveStatus.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      saveStatus.textContent = '保存中...';
+      try {
+        const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'index.html');
+
+        const brandSpan = doc.querySelector('.brand span');
+        if (brandSpan) brandSpan.textContent = document.getElementById('siteName').value;
+
+        const heroKicker = doc.querySelector('.hero-kicker');
+        if (heroKicker) heroKicker.textContent = document.getElementById('heroKicker').value;
+
+        const heroTitleEl = doc.getElementById('heroTitle');
+        if (heroTitleEl) {
+          const copy = document.getElementById('heroCopy').value;
+          heroTitleEl.setAttribute('data-text', copy);
+          heroTitleEl.setAttribute('aria-label', copy);
+        }
+
+        const heroTextEl = doc.querySelector('.hero-text');
+        if (heroTextEl) heroTextEl.textContent = document.getElementById('heroText').value;
+
+        const primaryBtn = doc.querySelector('.hero-actions .btn.primary');
+        if (primaryBtn) {
+          primaryBtn.textContent = document.getElementById('primaryBtnLabel').value;
+          primaryBtn.setAttribute('href', document.getElementById('primaryBtnHref').value);
+        }
+
+        const ghostBtn = doc.querySelector('.hero-actions .btn.ghost');
+        if (ghostBtn) {
+          ghostBtn.textContent = document.getElementById('ghostBtnLabel').value;
+          ghostBtn.setAttribute('href', document.getElementById('ghostBtnHref').value);
+        }
+
+        const linkSectionTitle = doc.querySelector('.link-section .section-head h2');
+        if (linkSectionTitle) linkSectionTitle.textContent = document.getElementById('linkSectionTitle').value;
+
+        const linkSectionText = doc.querySelector('.link-section .section-head p');
+        if (linkSectionText) linkSectionText.textContent = document.getElementById('linkSectionText').value;
+
+        await AdminShared.saveFileDoc(githubTokenInput, 'index.html', doc, sha, 'Update site settings');
+        saveStatus.textContent = '保存しました。数分後にサイトへ反映されます。';
+      } catch (err) {
+        saveStatus.textContent = `保存に失敗しました: ${err.message}`;
+      }
+    });
+  </script>
+</body>
+</html>

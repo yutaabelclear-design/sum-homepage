@@ -56,7 +56,7 @@ function startHeroTitle() {
   if (!heroTitle || heroTitle.dataset.started === 'true') return;
   heroTitle.dataset.started = 'true';
 
-  const text = 'The Sun Rises Again';
+  const text = heroTitle.dataset.text || 'The Sun Rises Again';
   heroTitle.textContent = '';
 
   const words = text.split(' ');
