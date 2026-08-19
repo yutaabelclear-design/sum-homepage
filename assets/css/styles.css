@@ -1291,6 +1291,80 @@ a {
   object-fit: cover;
 }
 
+/* ===== Story blocks (alternating text + image sections) ===== */
+.story-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+}
+
+.story-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.story-block.is-reverse {
+  direction: rtl;
+}
+
+.story-block.is-reverse > * {
+  direction: ltr;
+}
+
+.story-block-number {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--orange-deep);
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  font-size: 14px;
+}
+
+.story-block-text h2 {
+  margin: 0 0 18px;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.story-block-text p {
+  margin: 0 0 16px;
+}
+
+.story-block-text ul.detail-list {
+  margin-top: 20px;
+}
+
+.story-block-media {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.story-block-media img {
+  width: 100%;
+  border-radius: 26px;
+  box-shadow: var(--shadow);
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+}
+
+.story-block-caption {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+@media (max-width: 860px) {
+  .story-block,
+  .story-block.is-reverse {
+    grid-template-columns: 1fr;
+    direction: ltr;
+  }
+}
+
 .image-admin-thumb-delete {
   position: absolute;
   top: 6px;
