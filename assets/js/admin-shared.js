@@ -56,13 +56,13 @@ const AdminShared = (() => {
   }
 
   function setupTokenPersistence(inputEl, storageKey, statusEl) {
-    const saved = sessionStorage.getItem(storageKey);
+    const saved = localStorage.getItem(storageKey);
     if (saved) {
       inputEl.value = saved;
-      if (statusEl) statusEl.textContent = 'このセッションで保存されたトークンを使用します。';
+      if (statusEl) statusEl.textContent = 'このブラウザに保存されたトークンを使用します。';
     }
     inputEl.addEventListener('input', () => {
-      sessionStorage.setItem(storageKey, inputEl.value);
+      localStorage.setItem(storageKey, inputEl.value);
     });
   }
 
