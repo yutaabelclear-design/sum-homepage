@@ -116,6 +116,12 @@
     ];
 
     const buildUploadBlob = AdminShared.buildUploadBlob;
+    const SITE_BASE = 'https://yutaabelclear-design.github.io/sum-homepage/';
+
+    function absoluteImageUrl(path) {
+      const clean = path.replace(/^\.?\//, '');
+      return `${SITE_BASE}${clean}?t=${Date.now()}`;
+    }
 
     function setupGallerySection(config) {
       const listEl = document.getElementById(config.listElId);
@@ -144,7 +150,7 @@
             thumbWrap.className = 'image-admin-thumb';
 
             const thumb = document.createElement('img');
-            thumb.src = src;
+            thumb.src = absoluteImageUrl(src);
             thumbWrap.appendChild(thumb);
 
             const delBtn = document.createElement('button');
@@ -246,7 +252,7 @@
       card.className = 'detail-card image-admin-card';
 
       const preview = document.createElement('img');
-      preview.src = slot.path;
+      preview.src = absoluteImageUrl(slot.path);
       preview.alt = slot.label;
       preview.className = 'image-admin-preview';
 
