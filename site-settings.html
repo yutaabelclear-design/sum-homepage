@@ -110,6 +110,12 @@
     const githubTokenInput = document.getElementById('githubToken');
     AdminShared.setupTokenPersistence(githubTokenInput, 'sumAdminGithubToken', null);
 
+    const SITE_BASE = 'https://yutaabelclear-design.github.io/sum-homepage/';
+    function absoluteImageUrl(path) {
+      const clean = path.replace(/^\.?\//, '');
+      return `${SITE_BASE}${clean}?t=${Date.now()}`;
+    }
+
     const loadBtn = document.getElementById('loadBtn');
     const loadStatus = document.getElementById('loadStatus');
     const settingsForm = document.getElementById('settingsForm');
@@ -185,6 +191,64 @@
       heading.textContent = `${file} 自体の見出し(ページ上部の大きなタイトル部分)`;
       wrap.appendChild(heading);
 
+      const imgPreview = document.createElement('img');
+      imgPreview.className = 'image-admin-preview';
+      imgPreview.alt = `${file} の見出し画像`;
+      wrap.appendChild(imgPreview);
+
+      const imgFileInput = document.createElement('input');
+      imgFileInput.type = 'file';
+      imgFileInput.accept = 'image/*';
+      imgFileInput.className = 'admin-input';
+      wrap.appendChild(imgFileInput);
+
+      imgFileInput.addEventListener('change', () => {
+        const f = imgFileInput.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => { imgPreview.src = reader.result; };
+        reader.readAsDataURL(f);
+      });
+
+      const imgBtn = document.createElement('button');
+      imgBtn.type = 'button';
+      imgBtn.textContent = '見出し画像を差し替える';
+      imgBtn.className = 'btn ghost admin-btn-ghost';
+      wrap.appendChild(imgBtn);
+
+      const imgStatus = document.createElement('p');
+      imgStatus.className = 'admin-status';
+      wrap.appendChild(imgStatus);
+
+      imgBtn.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+          imgStatus.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        const f = imgFileInput.files[0];
+        if (!f) {
+          imgStatus.textContent = 'ファイルを選択してください。';
+          return;
+        }
+        imgBtn.disabled = true;
+        imgStatus.textContent = 'アップロード中...';
+        try {
+          const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
+          const newPath = `assets/images/${file.replace('.html', '')}-hero-${Date.now()}.${ext}`;
+          await AdminShared.putBinaryFile(githubTokenInput, newPath, f, `Update hero image for ${file}`);
+          await AdminShared.saveFileDocWithRetry(githubTokenInput, file, (doc) => {
+            const imgEl = doc.querySelector('.detail-hero > img');
+            if (imgEl) imgEl.setAttribute('src', newPath);
+          }, `Update hero image for ${file}`);
+          imgStatus.textContent = '更新しました。数分後にサイトへ反映されます。';
+        } catch (err) {
+          imgStatus.textContent = `失敗しました: ${err.message}`;
+        } finally {
+          imgBtn.disabled = false;
+        }
+      });
+
       const labelInput = document.createElement('input');
       labelInput.type = 'text';
       labelInput.className = 'admin-input';
@@ -227,6 +291,8 @@
         status.textContent = '読み込み中...';
         try {
           const { doc } = await AdminShared.loadFileDoc(githubTokenInput, file);
+          const heroImgSrc = doc.querySelector('.detail-hero > img')?.getAttribute('src');
+          if (heroImgSrc) imgPreview.src = absoluteImageUrl(heroImgSrc);
           labelInput.value = doc.querySelector('.detail-hero-content .section-label')?.textContent || '';
           titleInput.value = doc.querySelector('.detail-hero-content h1')?.textContent || '';
           textInput.value = doc.querySelector('.detail-hero-content p:not(.section-label)')?.textContent || '';
