@@ -94,6 +94,8 @@
             <label class="admin-field">案内文<input type="text" id="linkSectionText" class="admin-input" /></label>
           </article>
 
+          <div id="dynamicFields"></div>
+
           <button type="submit" class="btn primary">保存する</button>
           <p id="saveStatus" class="admin-status"></p>
         </form>
@@ -122,6 +124,92 @@
 
     let currentSha = null;
 
+    const SECTIONS = [
+      { title: 'NEWSセクション', fields: [
+        { id: 'newsLabel', label: 'ラベル', sel: '#news .section-head .section-label' },
+        { id: 'newsTitle', label: '見出し', sel: '#news .section-head h2' },
+        { id: 'newsText', label: '説明文', sel: '#news .section-head p', multiline: true },
+      ]},
+      { title: 'チーム紹介(ストーリー内)', fields: [
+        { id: 'teamLabel', label: 'ラベル', sel: '#team > p.section-label' },
+        { id: 'teamTitle', label: '見出し', sel: '#team > h2' },
+        { id: 'teamText', label: '説明文', sel: '#team > p:not(.section-label)', multiline: true },
+      ]},
+      { title: '活動内容(ストーリー内)', fields: [
+        { id: 'activityLabel', label: 'ラベル', sel: '#activity > p.section-label' },
+        { id: 'activityTitle', label: '見出し', sel: '#activity > h2' },
+        { id: 'activityText', label: '説明文', sel: '#activity > p:not(.section-label)', multiline: true },
+      ]},
+      { title: 'メンバー紹介(ストーリー内)', fields: [
+        { id: 'membersLabel', label: 'ラベル', sel: '#members > p.section-label' },
+        { id: 'membersTitle', label: '見出し', sel: '#members > h2' },
+      ]},
+      { title: '車両紹介(ストーリー内)', fields: [
+        { id: 'vehicleLabel', label: 'ラベル', sel: '#vehicle > p.section-label' },
+        { id: 'vehicleTitle', label: '見出し', sel: '#vehicle > h2' },
+        { id: 'vehicleText', label: '説明文', sel: '#vehicle > p:not(.section-label)', multiline: true },
+      ]},
+      { title: 'スポンサー紹介(ストーリー内)', fields: [
+        { id: 'sponsorsLabel', label: 'ラベル', sel: '#sponsors > p.section-label' },
+        { id: 'sponsorsTitle', label: '見出し', sel: '#sponsors > h2' },
+        { id: 'sponsorsNote', label: '注記文', sel: '#sponsors > p.note', multiline: true },
+      ]},
+      { title: '新入部員募集セクション', fields: [
+        { id: 'recruitLabel', label: 'ラベル', sel: '#recruit .section-label' },
+        { id: 'recruitTitle', label: '見出し', sel: '#recruit h2' },
+        { id: 'recruitText1', label: '説明文1', sel: '#recruit p:nth-of-type(2)', multiline: true },
+        { id: 'recruitText2', label: '説明文2', sel: '#recruit p:nth-of-type(3)', multiline: true },
+      ]},
+      { title: '大会実績セクション', fields: [
+        { id: 'resultsLabel', label: 'ラベル', sel: '#results .section-head .section-label' },
+        { id: 'resultsTitle', label: '見出し', sel: '#results .section-head h2' },
+        { id: 'resultsText', label: '説明文', sel: '#results .section-head p', multiline: true },
+        { id: 'resultsCardYear', label: 'カード内の年度', sel: '#results .result-card span' },
+        { id: 'resultsCardTitle', label: 'カード内の見出し', sel: '#results .result-card h3' },
+        { id: 'resultsCardText', label: 'カード内の説明文', sel: '#results .result-card p', multiline: true },
+      ]},
+      { title: 'ギャラリーセクション', fields: [
+        { id: 'galleryLabel', label: 'ラベル', sel: '#gallery .section-head .section-label' },
+        { id: 'galleryTitle', label: '見出し', sel: '#gallery .section-head h2' },
+        { id: 'galleryText', label: '説明文', sel: '#gallery .section-head p', multiline: true },
+      ]},
+      { title: 'お問い合わせセクション', fields: [
+        { id: 'contactLabel', label: 'ラベル', sel: '#contact .section-label' },
+        { id: 'contactTitle', label: '見出し', sel: '#contact h2' },
+        { id: 'contactText', label: '説明文', sel: '#contact .split > div > p:nth-of-type(2)', multiline: true },
+      ]},
+    ];
+
+    const dynamicFieldsEl = document.getElementById('dynamicFields');
+    SECTIONS.forEach((section) => {
+      const card = document.createElement('article');
+      card.className = 'detail-card';
+      card.style.marginBottom = '24px';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = section.title;
+      card.appendChild(h3);
+
+      section.fields.forEach((field) => {
+        const label = document.createElement('label');
+        label.className = 'admin-field';
+        label.textContent = field.label;
+
+        const input = document.createElement(field.multiline ? 'textarea' : 'input');
+        input.id = field.id;
+        input.className = 'admin-input';
+        if (field.multiline) {
+          input.rows = 3;
+        } else {
+          input.type = 'text';
+        }
+        label.appendChild(input);
+        card.appendChild(label);
+      });
+
+      dynamicFieldsEl.appendChild(card);
+    });
+
     function fillForm(doc) {
       document.getElementById('siteName').value = doc.querySelector('.brand span')?.textContent || '';
       document.getElementById('heroKicker').value = doc.querySelector('.hero-kicker')?.textContent || '';
@@ -135,6 +223,13 @@
       document.getElementById('ghostBtnHref').value = ghostBtn?.getAttribute('href') || '';
       document.getElementById('linkSectionTitle').value = doc.querySelector('.link-section .section-head h2')?.textContent || '';
       document.getElementById('linkSectionText').value = doc.querySelector('.link-section .section-head p')?.textContent || '';
+
+      SECTIONS.forEach((section) => {
+        section.fields.forEach((field) => {
+          const el = doc.querySelector(field.sel);
+          document.getElementById(field.id).value = el ? el.textContent.trim() : '';
+        });
+      });
     }
 
     loadBtn.addEventListener('click', async () => {
@@ -197,6 +292,13 @@
 
         const linkSectionText = doc.querySelector('.link-section .section-head p');
         if (linkSectionText) linkSectionText.textContent = document.getElementById('linkSectionText').value;
+
+        SECTIONS.forEach((section) => {
+          section.fields.forEach((field) => {
+            const el = doc.querySelector(field.sel);
+            if (el) el.textContent = document.getElementById(field.id).value;
+          });
+        });
 
         await AdminShared.saveFileDoc(githubTokenInput, 'index.html', doc, sha, 'Update site settings');
         saveStatus.textContent = '保存しました。数分後にサイトへ反映されます。';
