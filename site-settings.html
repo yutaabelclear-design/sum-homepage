@@ -130,12 +130,12 @@
         { id: 'newsTitle', label: '見出し', sel: '#news .section-head h2' },
         { id: 'newsText', label: '説明文', sel: '#news .section-head p', multiline: true },
       ]},
-      { title: 'チーム紹介(ストーリー内)', fields: [
+      { title: 'チーム紹介(ストーリー内)', image: { path: 'assets/images/team-photo.svg', label: 'チーム紹介の写真' }, fields: [
         { id: 'teamLabel', label: 'ラベル', sel: '#team > p.section-label' },
         { id: 'teamTitle', label: '見出し', sel: '#team > h2' },
         { id: 'teamText', label: '説明文', sel: '#team > p:not(.section-label)', multiline: true },
       ]},
-      { title: '活動内容(ストーリー内)', fields: [
+      { title: '活動内容(ストーリー内)', image: { path: 'assets/images/activity-photo.svg', label: '活動内容の写真' }, fields: [
         { id: 'activityLabel', label: 'ラベル', sel: '#activity > p.section-label' },
         { id: 'activityTitle', label: '見出し', sel: '#activity > h2' },
         { id: 'activityText', label: '説明文', sel: '#activity > p:not(.section-label)', multiline: true },
@@ -144,7 +144,7 @@
         { id: 'membersLabel', label: 'ラベル', sel: '#members > p.section-label' },
         { id: 'membersTitle', label: '見出し', sel: '#members > h2' },
       ]},
-      { title: '車両紹介(ストーリー内)', fields: [
+      { title: '車両紹介(ストーリー内)', image: { path: 'assets/images/vehicle-wide.svg', label: '車両紹介の写真' }, fields: [
         { id: 'vehicleLabel', label: 'ラベル', sel: '#vehicle > p.section-label' },
         { id: 'vehicleTitle', label: '見出し', sel: '#vehicle > h2' },
         { id: 'vehicleText', label: '説明文', sel: '#vehicle > p:not(.section-label)', multiline: true },
@@ -154,13 +154,13 @@
         { id: 'sponsorsTitle', label: '見出し', sel: '#sponsors > h2' },
         { id: 'sponsorsNote', label: '注記文', sel: '#sponsors > p.note', multiline: true },
       ]},
-      { title: '新入部員募集セクション', fields: [
+      { title: '新入部員募集セクション', image: { path: 'assets/images/recruit-photo.svg', label: '募集セクションの写真' }, fields: [
         { id: 'recruitLabel', label: 'ラベル', sel: '#recruit .section-label' },
         { id: 'recruitTitle', label: '見出し', sel: '#recruit h2' },
         { id: 'recruitText1', label: '説明文1', sel: '#recruit p:nth-of-type(2)', multiline: true },
         { id: 'recruitText2', label: '説明文2', sel: '#recruit p:nth-of-type(3)', multiline: true },
       ]},
-      { title: '大会実績セクション', fields: [
+      { title: '大会実績セクション', image: { path: 'assets/images/result-car.svg', label: 'カード内の写真' }, fields: [
         { id: 'resultsLabel', label: 'ラベル', sel: '#results .section-head .section-label' },
         { id: 'resultsTitle', label: '見出し', sel: '#results .section-head h2' },
         { id: 'resultsText', label: '説明文', sel: '#results .section-head p', multiline: true },
@@ -189,6 +189,66 @@
       const h3 = document.createElement('h3');
       h3.textContent = section.title;
       card.appendChild(h3);
+
+      if (section.image) {
+        const imgLabel = document.createElement('p');
+        imgLabel.className = 'admin-note';
+        imgLabel.textContent = section.image.label;
+        card.appendChild(imgLabel);
+
+        const preview = document.createElement('img');
+        preview.src = section.image.path;
+        preview.alt = section.image.label;
+        preview.className = 'image-admin-preview';
+        card.appendChild(preview);
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.className = 'admin-input';
+        card.appendChild(fileInput);
+
+        fileInput.addEventListener('change', () => {
+          const file = fileInput.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => { preview.src = reader.result; };
+          reader.readAsDataURL(file);
+        });
+
+        const imgBtn = document.createElement('button');
+        imgBtn.type = 'button';
+        imgBtn.textContent = 'この写真に差し替える';
+        imgBtn.className = 'btn ghost admin-btn-ghost';
+        card.appendChild(imgBtn);
+
+        const imgStatus = document.createElement('p');
+        imgStatus.className = 'admin-status';
+        card.appendChild(imgStatus);
+
+        imgBtn.addEventListener('click', async () => {
+          const token = githubTokenInput.value.trim();
+          if (!token) {
+            imgStatus.textContent = 'GitHubトークンを入力してください。';
+            return;
+          }
+          const file = fileInput.files[0];
+          if (!file) {
+            imgStatus.textContent = 'ファイルを選択してください。';
+            return;
+          }
+          imgBtn.disabled = true;
+          imgStatus.textContent = 'アップロード中...';
+          try {
+            await AdminShared.replaceImageAtPath(githubTokenInput, section.image.path, file, `Update image: ${section.image.label}`);
+            imgStatus.textContent = '更新しました。数分後にサイトへ反映されます。';
+          } catch (err) {
+            imgStatus.textContent = `失敗しました: ${err.message}`;
+          } finally {
+            imgBtn.disabled = false;
+          }
+        });
+      }
 
       section.fields.forEach((field) => {
         const label = document.createElement('label');

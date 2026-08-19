@@ -170,6 +170,43 @@ const AdminShared = (() => {
     });
   }
 
+  function loadImageDimensions(dataUrl) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth || 800, height: img.naturalHeight || 600 });
+      img.onerror = () => resolve({ width: 800, height: 600 });
+      img.src = dataUrl;
+    });
+  }
+
+  function buildSvgWrapper(dataUrl, width, height) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}"><image href="${dataUrl}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" /></svg>`;
+  }
+
+  async function buildUploadBlob(file, targetPath) {
+    const isTargetSvg = targetPath.toLowerCase().endsWith('.svg');
+    const isFileSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+
+    if (!isTargetSvg || isFileSvg) {
+      return file;
+    }
+
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const { width, height } = await loadImageDimensions(dataUrl);
+    const svgText = buildSvgWrapper(dataUrl, width, height);
+    return new File([svgText], file.name, { type: 'image/svg+xml' });
+  }
+
+  async function replaceImageAtPath(tokenInputEl, path, file, message) {
+    const uploadFile = await buildUploadBlob(file, path);
+    await putBinaryFile(tokenInputEl, path, uploadFile, message);
+  }
+
   function renderPostRow(label, onDelete) {
     const row = document.createElement('div');
     row.className = 'admin-post-row';
@@ -210,5 +247,9 @@ const AdminShared = (() => {
     fileToBase64,
     getFileSha,
     putBinaryFile,
+    loadImageDimensions,
+    buildSvgWrapper,
+    buildUploadBlob,
+    replaceImageAtPath,
   };
 })();
