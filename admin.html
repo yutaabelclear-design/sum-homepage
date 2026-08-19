@@ -109,6 +109,40 @@
         </article>
 
         <article class="detail-card">
+          <h3>メンバーを追加</h3>
+          <form id="memberForm" class="contact-form">
+            <label>
+              役職・班
+              <input type="text" id="memberRole" placeholder="例: 設計班 班長" required />
+            </label>
+            <label>
+              氏名
+              <input type="text" id="memberName" placeholder="例: 山田 太郎" required />
+            </label>
+            <label>
+              所属班
+              <input type="text" id="memberTeam" placeholder="例: 設計班" />
+            </label>
+            <label>
+              説明文
+              <textarea id="memberDesc" rows="3" placeholder="担当内容などを入力してください"></textarea>
+            </label>
+            <label>
+              一言コメント(任意)
+              <input type="text" id="memberComment" placeholder="例: がんばります!" />
+            </label>
+            <button type="submit" class="btn primary">メンバーを追加する</button>
+          </form>
+          <p id="memberStatus" class="admin-status"></p>
+        </article>
+
+        <article class="detail-card">
+          <h3>メンバーの一覧・削除</h3>
+          <button type="button" id="loadMembersBtn" class="btn ghost admin-btn-ghost">メンバーの一覧を読み込む</button>
+          <div id="memberList" class="admin-post-list"></div>
+        </article>
+
+        <article class="detail-card">
           <h3>画像の管理</h3>
           <p>サイト内の写真(ロゴ・ヒーロー画像・各ページの写真など)を差し替えられます。</p>
           <a href="images-admin.html" class="btn primary">画像管理ページを開く</a>
@@ -386,6 +420,88 @@
     }
 
     loadReportsBtn.addEventListener('click', renderReportList);
+
+    const memberForm = document.getElementById('memberForm');
+    const memberStatus = document.getElementById('memberStatus');
+    const loadMembersBtn = document.getElementById('loadMembersBtn');
+    const memberListEl = document.getElementById('memberList');
+
+    memberForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = githubTokenInput.value.trim();
+      if (!token) {
+        memberStatus.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      const role = document.getElementById('memberRole').value.trim();
+      const name = document.getElementById('memberName').value.trim();
+      const team = document.getElementById('memberTeam').value.trim();
+      const desc = document.getElementById('memberDesc').value.trim();
+      const comment = document.getElementById('memberComment').value.trim();
+      if (!role || !name) return;
+
+      const teamHtml = team ? `<p class="member-team">所属班: ${AdminShared.escapeHtml(team)}</p>` : '';
+      const descHtml = desc ? `<p>${AdminShared.escapeHtml(desc)}</p>` : '';
+      const commentHtml = comment ? `<p class="member-comment">「${AdminShared.escapeHtml(comment)}」</p>` : '';
+      const snippet = `<article><span>${AdminShared.escapeHtml(role)}</span><h3>${AdminShared.escapeHtml(name)}</h3>${teamHtml}${descHtml}${commentHtml}</article>`;
+
+      memberStatus.textContent = '追加中...';
+      try {
+        await AdminShared.insertSnippetIntoFile(githubTokenInput, 'members.html', 'class="member-cards reveal">', snippet, 'Add member');
+        memberStatus.textContent = '追加しました。数分後にサイトへ反映されます。';
+        memberForm.reset();
+      } catch (err) {
+        memberStatus.textContent = `追加に失敗しました: ${err.message}`;
+      }
+    });
+
+    async function deleteMember(index) {
+      const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'members.html');
+      const members = doc.querySelectorAll('.member-cards article');
+      if (!members[index]) throw new Error('メンバーが見つかりませんでした');
+      members[index].remove();
+      await AdminShared.saveFileDoc(githubTokenInput, 'members.html', doc, sha, 'Delete member');
+    }
+
+    async function renderMemberList() {
+      if (!githubTokenInput.value.trim()) {
+        memberListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      memberListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'members.html');
+        const members = Array.from(doc.querySelectorAll('.member-cards article'));
+        memberListEl.innerHTML = '';
+        if (!members.length) {
+          memberListEl.textContent = 'メンバーがいません。';
+          return;
+        }
+        members.forEach((member, index) => {
+          const role = member.querySelector('span')?.textContent || '';
+          const name = member.querySelector('h3')?.textContent || '(無名)';
+          const row = AdminShared.renderPostRow(`${role} ${name}`, async (event) => {
+            if (!confirm(`「${name}」を削除しますか?`)) return;
+            const delBtn = event.currentTarget;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteMember(index);
+              renderMemberList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          memberListEl.appendChild(row);
+        });
+      } catch (err) {
+        memberListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadMembersBtn.addEventListener('click', renderMemberList);
   </script>
 </body>
 </html>
