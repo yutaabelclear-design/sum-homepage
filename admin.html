@@ -455,12 +455,106 @@
       }
     });
 
-    async function deleteMember(index) {
-      const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'members.html');
-      const members = doc.querySelectorAll('.member-cards article');
-      if (!members[index]) throw new Error('メンバーが見つかりませんでした');
-      members[index].remove();
-      await AdminShared.saveFileDoc(githubTokenInput, 'members.html', doc, sha, 'Delete member');
+    let memberDoc = null;
+    let memberSha = null;
+
+    function renderMemberRows() {
+      memberListEl.innerHTML = '';
+      const members = Array.from(memberDoc.querySelectorAll('.member-cards article'));
+      if (!members.length) {
+        memberListEl.textContent = 'メンバーがいません。';
+        return;
+      }
+
+      const orderNote = document.createElement('p');
+      orderNote.className = 'admin-note';
+      orderNote.textContent = '▲▼で並び替えたら「並び順を保存する」を押してください。';
+      memberListEl.appendChild(orderNote);
+
+      members.forEach((member, index) => {
+        const role = member.querySelector('span')?.textContent || '';
+        const name = member.querySelector('h3')?.textContent || '(無名)';
+
+        const row = document.createElement('div');
+        row.className = 'admin-post-row';
+
+        const label = document.createElement('span');
+        label.textContent = `${role} ${name}`;
+        row.appendChild(label);
+
+        const btnGroup = document.createElement('div');
+        btnGroup.style.display = 'flex';
+        btnGroup.style.gap = '6px';
+
+        const upBtn = document.createElement('button');
+        upBtn.type = 'button';
+        upBtn.textContent = '▲';
+        upBtn.className = 'admin-btn-ghost btn ghost';
+        upBtn.disabled = index === 0;
+        upBtn.addEventListener('click', () => {
+          const container = memberDoc.querySelector('.member-cards');
+          const prev = member.previousElementSibling;
+          if (prev) container.insertBefore(member, prev);
+          renderMemberRows();
+        });
+
+        const downBtn = document.createElement('button');
+        downBtn.type = 'button';
+        downBtn.textContent = '▼';
+        downBtn.className = 'admin-btn-ghost btn ghost';
+        downBtn.disabled = index === members.length - 1;
+        downBtn.addEventListener('click', () => {
+          const container = memberDoc.querySelector('.member-cards');
+          const next = member.nextElementSibling;
+          if (next) container.insertBefore(next, member);
+          renderMemberRows();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.textContent = '削除';
+        delBtn.className = 'admin-delete-btn';
+        delBtn.addEventListener('click', () => {
+          if (!confirm(`「${name}」を削除しますか?`)) return;
+          member.remove();
+          renderMemberRows();
+        });
+
+        btnGroup.appendChild(upBtn);
+        btnGroup.appendChild(downBtn);
+        btnGroup.appendChild(delBtn);
+        row.appendChild(btnGroup);
+        memberListEl.appendChild(row);
+      });
+
+      const saveOrderBtn = document.createElement('button');
+      saveOrderBtn.type = 'button';
+      saveOrderBtn.textContent = '並び順を保存する(削除も反映されます)';
+      saveOrderBtn.className = 'btn primary';
+      saveOrderBtn.style.marginTop = '14px';
+      const orderStatus = document.createElement('p');
+      orderStatus.className = 'admin-status';
+
+      saveOrderBtn.addEventListener('click', async () => {
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+          orderStatus.textContent = 'GitHubトークンを入力してください。';
+          return;
+        }
+        saveOrderBtn.disabled = true;
+        orderStatus.textContent = '保存中...';
+        try {
+          await AdminShared.saveFileDoc(githubTokenInput, 'members.html', memberDoc, memberSha, 'Reorder members');
+          orderStatus.textContent = '保存しました。数分後にサイトへ反映されます。';
+        } catch (err) {
+          orderStatus.textContent = `保存に失敗しました: ${err.message}`;
+        } finally {
+          saveOrderBtn.disabled = false;
+        }
+      });
+
+      memberListEl.appendChild(saveOrderBtn);
+      memberListEl.appendChild(orderStatus);
     }
 
     async function renderMemberList() {
@@ -470,32 +564,10 @@
       }
       memberListEl.textContent = '読み込み中...';
       try {
-        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'members.html');
-        const members = Array.from(doc.querySelectorAll('.member-cards article'));
-        memberListEl.innerHTML = '';
-        if (!members.length) {
-          memberListEl.textContent = 'メンバーがいません。';
-          return;
-        }
-        members.forEach((member, index) => {
-          const role = member.querySelector('span')?.textContent || '';
-          const name = member.querySelector('h3')?.textContent || '(無名)';
-          const row = AdminShared.renderPostRow(`${role} ${name}`, async (event) => {
-            if (!confirm(`「${name}」を削除しますか?`)) return;
-            const delBtn = event.currentTarget;
-            delBtn.disabled = true;
-            delBtn.textContent = '削除中...';
-            try {
-              await deleteMember(index);
-              renderMemberList();
-            } catch (err) {
-              alert(`削除に失敗しました: ${err.message}`);
-              delBtn.disabled = false;
-              delBtn.textContent = '削除';
-            }
-          });
-          memberListEl.appendChild(row);
-        });
+        const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'members.html');
+        memberDoc = doc;
+        memberSha = sha;
+        renderMemberRows();
       } catch (err) {
         memberListEl.textContent = `読み込みに失敗しました: ${err.message}`;
       }
