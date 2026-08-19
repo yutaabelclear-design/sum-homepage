@@ -1248,6 +1248,17 @@ a {
   background: var(--soft);
 }
 
+.image-admin-dropzone {
+  cursor: pointer;
+  border: 2px dashed transparent;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.image-admin-dropzone.is-dragover {
+  border-color: var(--orange);
+  opacity: 0.7;
+}
+
 @media (max-width: 560px) {
   .admin-gate-form {
     padding: 26px;

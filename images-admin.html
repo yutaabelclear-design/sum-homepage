@@ -166,6 +166,35 @@
       const status = document.createElement('p');
       status.className = 'admin-status';
 
+      function showPreview(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => { preview.src = reader.result; };
+        reader.readAsDataURL(file);
+      }
+
+      fileInput.addEventListener('change', () => showPreview(fileInput.files[0]));
+
+      preview.classList.add('image-admin-dropzone');
+      ['dragenter', 'dragover'].forEach((evt) => {
+        preview.addEventListener(evt, (event) => {
+          event.preventDefault();
+          preview.classList.add('is-dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach((evt) => {
+        preview.addEventListener(evt, (event) => {
+          event.preventDefault();
+          preview.classList.remove('is-dragover');
+        });
+      });
+      preview.addEventListener('drop', (event) => {
+        const file = event.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        fileInput.files = event.dataTransfer.files;
+        showPreview(file);
+      });
+
       uploadBtn.addEventListener('click', async () => {
         const token = githubTokenInput.value.trim();
         if (!token) {
@@ -183,9 +212,6 @@
           const uploadFile = await buildUploadBlob(file, slot.path);
           await AdminShared.putBinaryFile(githubTokenInput, slot.path, uploadFile, `Update image: ${slot.label}`);
           status.textContent = '更新しました。数分後にサイトへ反映されます。';
-          const reader = new FileReader();
-          reader.onload = () => { preview.src = reader.result; };
-          reader.readAsDataURL(file);
         } catch (err) {
           status.textContent = `失敗しました: ${err.message}`;
         } finally {
