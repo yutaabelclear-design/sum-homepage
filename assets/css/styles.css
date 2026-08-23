@@ -670,6 +670,16 @@ a {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.sponsor-card {
+  display: block;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.sponsor-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+}
+
 .sponsor-card img {
   height: 54px;
   width: auto;

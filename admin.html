@@ -143,6 +143,36 @@
         </article>
 
         <article class="detail-card">
+          <h3>スポンサーを追加</h3>
+          <form id="sponsorForm" class="contact-form">
+            <label>
+              企業・団体名
+              <input type="text" id="sponsorName" placeholder="例: 株式会社〇〇" required />
+            </label>
+            <label>
+              紹介文
+              <textarea id="sponsorDesc" rows="3" placeholder="紹介文を入力してください"></textarea>
+            </label>
+            <label>
+              ホームページのリンク先(任意・今は仮でOK)
+              <input type="text" id="sponsorLink" placeholder="例: https://example.com" />
+            </label>
+            <label>
+              ロゴ画像
+              <input type="file" id="sponsorLogo" accept="image/*" />
+            </label>
+            <button type="submit" class="btn primary">スポンサーを追加する</button>
+          </form>
+          <p id="sponsorStatus" class="admin-status"></p>
+        </article>
+
+        <article class="detail-card">
+          <h3>スポンサーの一覧・削除</h3>
+          <button type="button" id="loadSponsorsBtn" class="btn ghost admin-btn-ghost">スポンサーの一覧を読み込む</button>
+          <div id="sponsorList" class="admin-post-list"></div>
+        </article>
+
+        <article class="detail-card">
           <h3>画像の管理</h3>
           <p>サイト内の写真(ロゴ・ヒーロー画像・各ページの写真など)を差し替えられます。</p>
           <a href="images-admin.html" class="btn primary">画像管理ページを開く</a>
@@ -574,6 +604,95 @@
     }
 
     loadMembersBtn.addEventListener('click', renderMemberList);
+
+    const sponsorForm = document.getElementById('sponsorForm');
+    const sponsorStatus = document.getElementById('sponsorStatus');
+    const loadSponsorsBtn = document.getElementById('loadSponsorsBtn');
+    const sponsorListEl = document.getElementById('sponsorList');
+
+    async function uploadSponsorLogo(file) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `assets/images/sponsor-${Date.now()}.${ext}`;
+      await AdminShared.putBinaryFile(githubTokenInput, path, file, 'Add sponsor logo');
+      return path;
+    }
+
+    sponsorForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = githubTokenInput.value.trim();
+      if (!token) {
+        sponsorStatus.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      const name = document.getElementById('sponsorName').value.trim();
+      const desc = document.getElementById('sponsorDesc').value.trim();
+      const link = document.getElementById('sponsorLink').value.trim() || '#';
+      const logoFile = document.getElementById('sponsorLogo').files[0];
+      if (!name) return;
+
+      sponsorStatus.textContent = '追加中...';
+      try {
+        let logoHtml = '';
+        if (logoFile) {
+          const logoPath = await uploadSponsorLogo(logoFile);
+          logoHtml = `<img src="${logoPath}" alt="${AdminShared.escapeHtml(name)} ロゴ" />`;
+        }
+        const descHtml = desc ? `<p>${AdminShared.escapeHtml(desc)}</p>` : '';
+        const snippet = `<a class="sponsor-card" href="${AdminShared.escapeHtml(link)}" target="_blank" rel="noopener">${logoHtml}<h3>${AdminShared.escapeHtml(name)}</h3>${descHtml}</a>`;
+        await AdminShared.insertSnippetIntoFile(githubTokenInput, 'sponsors.html', 'class="sponsor-grid reveal">', snippet, 'Add sponsor');
+        sponsorStatus.textContent = '追加しました。数分後にサイトへ反映されます。';
+        sponsorForm.reset();
+      } catch (err) {
+        sponsorStatus.textContent = `追加に失敗しました: ${err.message}`;
+      }
+    });
+
+    async function deleteSponsor(index) {
+      const { doc, sha } = await AdminShared.loadFileDoc(githubTokenInput, 'sponsors.html');
+      const sponsors = doc.querySelectorAll('.sponsor-grid .sponsor-card');
+      if (!sponsors[index]) throw new Error('スポンサーが見つかりませんでした');
+      sponsors[index].remove();
+      await AdminShared.saveFileDoc(githubTokenInput, 'sponsors.html', doc, sha, 'Delete sponsor');
+    }
+
+    async function renderSponsorList() {
+      if (!githubTokenInput.value.trim()) {
+        sponsorListEl.textContent = 'GitHubトークンを入力してください。';
+        return;
+      }
+      sponsorListEl.textContent = '読み込み中...';
+      try {
+        const { doc } = await AdminShared.loadFileDoc(githubTokenInput, 'sponsors.html');
+        const sponsors = Array.from(doc.querySelectorAll('.sponsor-grid .sponsor-card'));
+        sponsorListEl.innerHTML = '';
+        if (!sponsors.length) {
+          sponsorListEl.textContent = 'スポンサーがいません。';
+          return;
+        }
+        sponsors.forEach((sponsor, index) => {
+          const name = sponsor.querySelector('h3')?.textContent || '(無題)';
+          const row = AdminShared.renderPostRow(name, async (event) => {
+            if (!confirm(`「${name}」を削除しますか?`)) return;
+            const delBtn = event.currentTarget;
+            delBtn.disabled = true;
+            delBtn.textContent = '削除中...';
+            try {
+              await deleteSponsor(index);
+              renderSponsorList();
+            } catch (err) {
+              alert(`削除に失敗しました: ${err.message}`);
+              delBtn.disabled = false;
+              delBtn.textContent = '削除';
+            }
+          });
+          sponsorListEl.appendChild(row);
+        });
+      } catch (err) {
+        sponsorListEl.textContent = `読み込みに失敗しました: ${err.message}`;
+      }
+    }
+
+    loadSponsorsBtn.addEventListener('click', renderSponsorList);
   </script>
 </body>
 </html>
