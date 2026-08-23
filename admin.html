@@ -638,7 +638,8 @@
           logoHtml = `<img src="${logoPath}" alt="${AdminShared.escapeHtml(name)} ロゴ" />`;
         }
         const descHtml = desc ? `<p>${AdminShared.escapeHtml(desc)}</p>` : '';
-        const snippet = `<a class="sponsor-card" href="${AdminShared.escapeHtml(link)}" target="_blank" rel="noopener">${logoHtml}<h3>${AdminShared.escapeHtml(name)}</h3>${descHtml}</a>`;
+        const logoLinkHtml = logoHtml ? `<a class="sponsor-logo-link" href="${AdminShared.escapeHtml(link)}" target="_blank" rel="noopener">${logoHtml}</a>` : '';
+        const snippet = `<article class="sponsor-card">${logoLinkHtml}<h3>${AdminShared.escapeHtml(name)}</h3>${descHtml}</article>`;
         await AdminShared.insertSnippetIntoFile(githubTokenInput, 'sponsors.html', 'class="sponsor-grid reveal">', snippet, 'Add sponsor');
         sponsorStatus.textContent = '追加しました。数分後にサイトへ反映されます。';
         sponsorForm.reset();

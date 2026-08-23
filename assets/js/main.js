@@ -238,6 +238,46 @@ if (newsModal) {
   });
 }
 
+const sponsorModal = document.getElementById('sponsorModal');
+if (sponsorModal) {
+  const sponsorModalImg = document.getElementById('sponsorModalImg');
+  const sponsorModalTitle = document.getElementById('sponsorModalTitle');
+  const sponsorModalBody = document.getElementById('sponsorModalBody');
+  const sponsorModalClose = document.getElementById('sponsorModalClose');
+
+  function openSponsorModal(card) {
+    const img = card.querySelector('img');
+    const title = card.querySelector('h3');
+    const body = card.querySelector('p');
+
+    sponsorModalImg.src = img ? img.src : '';
+    sponsorModalImg.alt = img ? img.alt : '';
+    sponsorModalTitle.textContent = title ? title.textContent : '';
+    sponsorModalBody.textContent = body ? body.textContent : '';
+    sponsorModal.hidden = false;
+  }
+
+  function closeSponsorModal() {
+    sponsorModal.hidden = true;
+    sponsorModalImg.src = '';
+  }
+
+  document.querySelectorAll('.sponsor-card').forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('.sponsor-logo-link')) return;
+      openSponsorModal(card);
+    });
+  });
+
+  sponsorModalClose.addEventListener('click', closeSponsorModal);
+  sponsorModal.addEventListener('click', (event) => {
+    if (event.target === sponsorModal) closeSponsorModal();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !sponsorModal.hidden) closeSponsorModal();
+  });
+}
+
 document.querySelectorAll('.news-slider').forEach((slider) => {
   const list = slider.querySelector('.news-list');
   const prevBtn = slider.querySelector('.news-nav.prev');

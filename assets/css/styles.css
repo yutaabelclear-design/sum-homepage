@@ -672,6 +672,7 @@ a {
 
 .sponsor-card {
   display: block;
+  cursor: pointer;
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
@@ -680,10 +681,20 @@ a {
   box-shadow: var(--shadow);
 }
 
-.sponsor-card img {
-  height: 54px;
-  width: auto;
+.sponsor-logo-link {
+  display: block;
   margin-bottom: 18px;
+}
+
+.sponsor-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 18px;
+  box-sizing: border-box;
 }
 
 .split {
